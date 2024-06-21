@@ -1,6 +1,6 @@
 use iced::{
-    widget::{button, column, text},
-    Element, Sandbox, Settings, Size,
+    widget::{button, column, space::Space, text},
+    Alignment, Element, Sandbox, Settings, Size,
 };
 
 #[derive(Debug, Default)]
@@ -19,10 +19,17 @@ impl Sandbox for Counter {
 
     fn view(&self) -> Element<CounterMessage> {
         column![
-            button("+").on_press(CounterMessage::Increment),
+            Space::with_height(15),
+            button(text("+").size(25))
+                .width(35)
+                .on_press(CounterMessage::Increment),
             text(self.value).size(65),
-            button("-").on_press(CounterMessage::Decrement)
+            button(text("-").size(25))
+                .width(35)
+                .on_press(CounterMessage::Decrement)
         ]
+        .align_items(Alignment::Center)
+        .width(150)
         .into()
     }
 
@@ -47,7 +54,7 @@ fn main() -> iced::Result {
 
     settings.window.size = Size {
         width: 150.0,
-        height: 150.0,
+        height: 200.0,
     };
 
     let settings = settings;
