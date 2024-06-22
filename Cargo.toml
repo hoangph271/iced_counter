@@ -4,4 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-iced = { git = "https://github.com/iced-rs/iced.git", version = "0.13.0-dev" }
+iced = { git = "https://github.com/iced-rs/iced.git", version = "0.13.0-dev", features = [
+    "auto-detect-theme",
+] }
