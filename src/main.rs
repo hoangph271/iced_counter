@@ -14,7 +14,7 @@ impl Default for Counter {
     fn default() -> Self {
         Self {
             value: Default::default(),
-            allow_negative: Default::default(),
+            allow_negative: true,
         }
     }
 }
