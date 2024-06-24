@@ -4,11 +4,7 @@ use iced::{
     Alignment, Element, Length, Size, Theme,
 };
 
-mod counter_themes {
-    pub const DEFAULT: &str = "Default";
-    pub const GRUVBOX: &str = "Gruvbox";
-    pub const SOLARIZED: &str = "Solarized";
-}
+mod counter_themes;
 
 #[derive(Debug)]
 struct Counter {
@@ -68,11 +64,7 @@ impl Counter {
                 .align_x(Horizontal::Center)
                 .width(Length::Fill),
                 PickList::new(
-                    vec![
-                        counter_themes::DEFAULT,
-                        counter_themes::GRUVBOX,
-                        counter_themes::SOLARIZED
-                    ],
+                    counter_themes::ALL_THEMES,
                     self.theme_name.as_deref(),
                     |theme_name| {
                         match theme_name {
