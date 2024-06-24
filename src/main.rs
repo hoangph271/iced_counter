@@ -1,14 +1,21 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    widget::{button, checkbox, column, container, row, text, vertical_space, Toggler},
+    widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Size, Theme,
 };
+
+mod counter_themes {
+    pub const DEFAULT: &str = "Default";
+    pub const GRUVBOX: &str = "Gruvbox";
+    pub const SOLARIZED: &str = "Solarized";
+}
 
 #[derive(Debug)]
 struct Counter {
     value: isize,
     allow_negative: bool,
-    dark_theme: bool,
+    dark_theme: Option<bool>,
+    theme_name: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -18,6 +25,8 @@ enum CounterMessage {
     Reset,
     ToggleAllowNegative(bool),
     ToggleDarkTheme(bool),
+    SwitchTheme(Option<String>),
+    NoOp,
 }
 
 impl Counter {
@@ -26,7 +35,7 @@ impl Counter {
             column![
                 Toggler::new(
                     Some("Dark theme".into()),
-                    self.dark_theme,
+                    self.dark_theme.unwrap_or_default(),
                     CounterMessage::ToggleDarkTheme
                 )
                 .width(Length::Shrink),
@@ -45,7 +54,6 @@ impl Counter {
                 ]
                 .spacing(12)
                 .align_items(Alignment::Center),
-                vertical_space().height(12),
                 container(
                     row![
                         button("Reset")
@@ -58,9 +66,27 @@ impl Counter {
                     .align_items(Alignment::Center)
                 )
                 .align_x(Horizontal::Center)
-                .width(Length::Fill)
+                .width(Length::Fill),
+                PickList::new(
+                    vec![
+                        counter_themes::DEFAULT,
+                        counter_themes::GRUVBOX,
+                        counter_themes::SOLARIZED
+                    ],
+                    self.theme_name.as_deref(),
+                    |theme_name| {
+                        match theme_name {
+                            counter_themes::GRUVBOX | counter_themes::SOLARIZED => {
+                                CounterMessage::SwitchTheme(Some(theme_name.to_string()))
+                            }
+                            counter_themes::DEFAULT => CounterMessage::SwitchTheme(None),
+                            _ => CounterMessage::NoOp,
+                        }
+                    }
+                ),
             ]
             .align_items(Alignment::Center)
+            .spacing(12)
             .height(Length::Fill),
         )
         .align_x(Horizontal::Center)
@@ -80,7 +106,9 @@ impl Counter {
             CounterMessage::ToggleAllowNegative(allow_negative) => {
                 self.allow_negative = allow_negative
             }
-            CounterMessage::ToggleDarkTheme(dark_theme) => self.dark_theme = dark_theme,
+            CounterMessage::ToggleDarkTheme(dark_theme) => self.dark_theme = Some(dark_theme),
+            CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
+            CounterMessage::NoOp => {}
         }
     }
 }
@@ -95,14 +123,20 @@ fn main() -> iced::Result {
         .run_with(|| Counter {
             value: Default::default(),
             allow_negative: true,
-            dark_theme: Theme::default() == Theme::Dark,
+            dark_theme: Some(Theme::default() == Theme::Dark),
+            theme_name: Some(counter_themes::DEFAULT.to_owned()),
         })
 }
 
 fn get_theme_from_state(state: &Counter) -> Theme {
-    if state.dark_theme {
-        Theme::Dark
-    } else {
-        Theme::Light
+    let dark_theme = state.dark_theme.is_some_and(|it| it);
+
+    match (state.theme_name.as_deref(), dark_theme) {
+        (Some(counter_themes::GRUVBOX), true) => Theme::GruvboxDark,
+        (Some(counter_themes::GRUVBOX), false) => Theme::GruvboxLight,
+        (Some(counter_themes::SOLARIZED), true) => Theme::SolarizedDark,
+        (Some(counter_themes::SOLARIZED), false) => Theme::SolarizedLight,
+        (_, true) => Theme::Dark,
+        (_, false) => Theme::Light,
     }
 }
