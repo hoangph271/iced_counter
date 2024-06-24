@@ -3,9 +3,9 @@ use iced::{
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Size, Theme,
 };
-use std::ops::Deref;
 
 mod counter_themes;
+use counter_themes::theme_from;
 
 #[derive(Debug)]
 struct Counter {
@@ -109,7 +109,7 @@ impl Counter {
 
 fn main() -> iced::Result {
     iced::application("iced_counter by @sneu", Counter::update, Counter::view)
-        .theme(get_theme_from_state)
+        .theme(|state| theme_from(&state.theme_name, &state.dark_theme.unwrap_or_default()))
         .window_size(Size {
             width: 240.0,
             height: 240.0,
@@ -118,19 +118,6 @@ fn main() -> iced::Result {
             value: Default::default(),
             allow_negative: true,
             dark_theme: Some(Theme::default() == Theme::Dark),
-            theme_name: counter_themes::DEFAULT.to_owned(),
+            theme_name: counter_themes::GRUVBOX.to_owned(),
         })
-}
-
-fn get_theme_from_state(state: &Counter) -> Theme {
-    let dark_theme = state.dark_theme.is_some_and(|it| it);
-
-    match (state.theme_name.deref(), dark_theme) {
-        (counter_themes::GRUVBOX, true) => Theme::GruvboxDark,
-        (counter_themes::GRUVBOX, false) => Theme::GruvboxLight,
-        (counter_themes::SOLARIZED, true) => Theme::SolarizedDark,
-        (counter_themes::SOLARIZED, false) => Theme::SolarizedLight,
-        (_, true) => Theme::Dark,
-        (_, false) => Theme::Light,
-    }
 }
