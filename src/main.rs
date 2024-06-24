@@ -3,6 +3,7 @@ use iced::{
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Size, Theme,
 };
+use std::ops::Deref;
 
 mod counter_themes;
 
@@ -11,7 +12,7 @@ struct Counter {
     value: isize,
     allow_negative: bool,
     dark_theme: Option<bool>,
-    theme_name: Option<String>,
+    theme_name: String,
 }
 
 #[derive(Clone, Debug)]
@@ -21,7 +22,7 @@ enum CounterMessage {
     Reset,
     ToggleAllowNegative(bool),
     ToggleDarkTheme(bool),
-    SwitchTheme(Option<String>),
+    SwitchTheme(String),
     NoOp,
 }
 
@@ -65,13 +66,14 @@ impl Counter {
                 .width(Length::Fill),
                 PickList::new(
                     counter_themes::ALL_THEMES,
-                    self.theme_name.as_deref(),
+                    Some(self.theme_name.as_str()),
                     |theme_name| {
                         match theme_name {
-                            counter_themes::GRUVBOX | counter_themes::SOLARIZED => {
-                                CounterMessage::SwitchTheme(Some(theme_name.to_string()))
+                            counter_themes::DEFAULT
+                            | counter_themes::GRUVBOX
+                            | counter_themes::SOLARIZED => {
+                                CounterMessage::SwitchTheme(theme_name.to_string())
                             }
-                            counter_themes::DEFAULT => CounterMessage::SwitchTheme(None),
                             _ => CounterMessage::NoOp,
                         }
                     }
@@ -116,18 +118,18 @@ fn main() -> iced::Result {
             value: Default::default(),
             allow_negative: true,
             dark_theme: Some(Theme::default() == Theme::Dark),
-            theme_name: Some(counter_themes::DEFAULT.to_owned()),
+            theme_name: counter_themes::DEFAULT.to_owned(),
         })
 }
 
 fn get_theme_from_state(state: &Counter) -> Theme {
     let dark_theme = state.dark_theme.is_some_and(|it| it);
 
-    match (state.theme_name.as_deref(), dark_theme) {
-        (Some(counter_themes::GRUVBOX), true) => Theme::GruvboxDark,
-        (Some(counter_themes::GRUVBOX), false) => Theme::GruvboxLight,
-        (Some(counter_themes::SOLARIZED), true) => Theme::SolarizedDark,
-        (Some(counter_themes::SOLARIZED), false) => Theme::SolarizedLight,
+    match (state.theme_name.deref(), dark_theme) {
+        (counter_themes::GRUVBOX, true) => Theme::GruvboxDark,
+        (counter_themes::GRUVBOX, false) => Theme::GruvboxLight,
+        (counter_themes::SOLARIZED, true) => Theme::SolarizedDark,
+        (counter_themes::SOLARIZED, false) => Theme::SolarizedLight,
         (_, true) => Theme::Dark,
         (_, false) => Theme::Light,
     }
