@@ -1,12 +1,14 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    system::{self, Information as SystemInfomation},
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Size, Task, Theme,
 };
 
 mod counter_themes;
 use counter_themes::theme_from;
+
+mod system_info;
+use system_info::{fetch_information, parse_system_info, SystemInfomation};
 
 #[derive(Debug)]
 struct Counter {
@@ -130,8 +132,7 @@ fn main() -> iced::Result {
             height: 240.0,
         })
         .load(|| {
-            system::fetch_information()
-                .map(|system_info| CounterMessage::SystemInfoLoaded(system_info))
+            fetch_information().map(|system_info| CounterMessage::SystemInfoLoaded(system_info))
         })
         .run_with(|| Counter {
             value: Default::default(),
@@ -140,13 +141,4 @@ fn main() -> iced::Result {
             theme_name: counter_themes::GRUVBOX.to_owned(),
             system_info: None,
         })
-}
-
-fn parse_system_info(system_info: &SystemInfomation) -> String {
-    vec![
-        system_info.system_name.as_deref().unwrap_or("Unknown"),
-        system_info.system_kernel.as_deref().unwrap_or("Unknown"),
-        system_info.system_version.as_deref().unwrap_or("Unknown"),
-    ]
-    .join(" - ")
 }
