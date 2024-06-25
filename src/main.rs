@@ -1,7 +1,8 @@
 use iced::{
     alignment::{Horizontal, Vertical},
+    system::{self, Information as SystemInfomation},
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
-    Alignment, Element, Length, Size, Theme,
+    Alignment, Element, Length, Size, Task, Theme,
 };
 
 mod counter_themes;
@@ -13,6 +14,7 @@ struct Counter {
     allow_negative: bool,
     dark_theme: Option<bool>,
     theme_name: String,
+    system_info: Option<SystemInfomation>,
 }
 
 #[derive(Clone, Debug)]
@@ -24,6 +26,7 @@ enum CounterMessage {
     ToggleDarkTheme(bool),
     SwitchTheme(String),
     NoOp,
+    SystemInfoLoaded(SystemInfomation),
 }
 
 impl Counter {
@@ -55,7 +58,11 @@ impl Counter {
                     row![
                         button("Reset")
                             .style(button::danger)
-                            .on_press(CounterMessage::Reset),
+                            .on_press_maybe(if self.value != 0 {
+                                Some(CounterMessage::Reset)
+                            } else {
+                                None
+                            }),
                         checkbox("Allow negative", self.allow_negative)
                             .on_toggle(CounterMessage::ToggleAllowNegative)
                     ]
@@ -78,6 +85,11 @@ impl Counter {
                         }
                     }
                 ),
+                if let Some(system_info) = &self.system_info {
+                    text(parse_system_info(system_info))
+                } else {
+                    text("...")
+                }
             ]
             .align_items(Alignment::Center)
             .spacing(12)
@@ -88,7 +100,7 @@ impl Counter {
         .into()
     }
 
-    fn update(&mut self, message: CounterMessage) {
+    fn update(&mut self, message: CounterMessage) -> Task<CounterMessage> {
         match message {
             CounterMessage::Increment => self.value += 1,
             CounterMessage::Decrement => {
@@ -102,8 +114,11 @@ impl Counter {
             }
             CounterMessage::ToggleDarkTheme(dark_theme) => self.dark_theme = Some(dark_theme),
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
+            CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
-        }
+        };
+
+        Task::none()
     }
 }
 
@@ -111,13 +126,27 @@ fn main() -> iced::Result {
     iced::application("iced_counter by @sneu", Counter::update, Counter::view)
         .theme(|state| theme_from(&state.theme_name, &state.dark_theme.unwrap_or_default()))
         .window_size(Size {
-            width: 240.0,
+            width: 512.0,
             height: 240.0,
+        })
+        .load(|| {
+            system::fetch_information()
+                .map(|system_info| CounterMessage::SystemInfoLoaded(system_info))
         })
         .run_with(|| Counter {
             value: Default::default(),
             allow_negative: true,
             dark_theme: Some(Theme::default() == Theme::Dark),
             theme_name: counter_themes::GRUVBOX.to_owned(),
+            system_info: None,
         })
+}
+
+fn parse_system_info(system_info: &SystemInfomation) -> String {
+    vec![
+        system_info.system_name.as_deref().unwrap_or("Unknown"),
+        system_info.system_kernel.as_deref().unwrap_or("Unknown"),
+        system_info.system_version.as_deref().unwrap_or("Unknown"),
+    ]
+    .join(" - ")
 }
