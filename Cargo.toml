@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 iced = { git = "https://github.com/iced-rs/iced.git", version = "0.13.0-dev", features = [
     "auto-detect-theme",
+    "system",
 ] }
