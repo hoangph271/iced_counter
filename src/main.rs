@@ -125,6 +125,10 @@ impl Counter {
 }
 
 fn main() -> iced::Result {
+    // while let Some(mode) = dark_light::subscribe().await.unwrap().next().await {
+    //     println!("System theme changed: {:?}", mode);
+    // }
+
     iced::application("iced_counter by @sneu", Counter::update, Counter::view)
         .theme(|state| theme_from(&state.theme_name, &state.dark_theme.unwrap_or_default()))
         .window_size(Size {
