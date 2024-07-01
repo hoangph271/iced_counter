@@ -1,5 +1,7 @@
 use iced::{
     alignment::{Horizontal, Vertical},
+    futures::{stream, StreamExt},
+    subscription,
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Subscription, Task,
 };
@@ -121,15 +123,20 @@ impl CounterApp {
     }
 
     pub fn subscription(&self) -> Subscription<CounterMessage> {
-        // subscription::run(|| {
-        //     // let res = dark_light::subscribe().await.unwrap();
-
-        //     // res.map(|mode| match mode {
-        //     //     dark_light::Mode::Dark => CounterMessage::ToggleDarkTheme(true),
-        //     //     dark_light::Mode::Light => CounterMessage::ToggleDarkTheme(false),
-        //     //     dark_light::Mode::Default => CounterMessage::ToggleDarkTheme(true),
-        //     // });
-        // });
-        todo!()
+        subscription::run(|| {
+            stream::once(dark_light::subscribe()).flat_map(|it| {
+                if let Ok(stream) = it {
+                    stream
+                        .map(|mode| match mode {
+                            dark_light::Mode::Dark => CounterMessage::ToggleDarkTheme(true),
+                            dark_light::Mode::Light => CounterMessage::ToggleDarkTheme(false),
+                            dark_light::Mode::Default => CounterMessage::ToggleDarkTheme(true),
+                        })
+                        .left_stream()
+                } else {
+                    stream::once(async { CounterMessage::NoOp }).right_stream()
+                }
+            })
+        })
     }
 }
