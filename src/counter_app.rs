@@ -13,7 +13,7 @@ use crate::system_info::{parse_system_info, SystemInfomation};
 pub struct CounterApp {
     pub value: isize,
     pub allow_negative: bool,
-    pub dark_theme: Option<bool>,
+    pub dark_mode: Option<bool>,
     pub theme_name: String,
     pub system_info: Option<SystemInfomation>,
 }
@@ -24,7 +24,7 @@ pub enum CounterMessage {
     Decrement,
     Reset,
     ToggleAllowNegative(bool),
-    ToggleDarkTheme(bool),
+    ToggleDarkMode(bool),
     SwitchTheme(String),
     NoOp,
     SystemInfoLoaded(SystemInfomation),
@@ -36,8 +36,8 @@ impl CounterApp {
             column![
                 Toggler::new(
                     Some("Dark theme".into()),
-                    self.dark_theme.unwrap_or_default(),
-                    CounterMessage::ToggleDarkTheme
+                    self.dark_mode.unwrap_or_default(),
+                    CounterMessage::ToggleDarkMode
                 )
                 .width(Length::Shrink),
                 row![
@@ -113,7 +113,7 @@ impl CounterApp {
             CounterMessage::ToggleAllowNegative(allow_negative) => {
                 self.allow_negative = allow_negative
             }
-            CounterMessage::ToggleDarkTheme(dark_theme) => self.dark_theme = Some(dark_theme),
+            CounterMessage::ToggleDarkMode(dark_mode) => self.dark_mode = Some(dark_mode),
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
@@ -127,10 +127,10 @@ impl CounterApp {
             stream::once(dark_light::subscribe()).flat_map(|it| {
                 if let Ok(stream) = it {
                     stream
-                        .map(|mode| match mode {
-                            dark_light::Mode::Dark => CounterMessage::ToggleDarkTheme(true),
-                            dark_light::Mode::Light => CounterMessage::ToggleDarkTheme(false),
-                            dark_light::Mode::Default => CounterMessage::ToggleDarkTheme(true),
+                        .map(|theme_mode| match theme_mode {
+                            dark_light::Mode::Dark => CounterMessage::ToggleDarkMode(true),
+                            dark_light::Mode::Light => CounterMessage::ToggleDarkMode(false),
+                            dark_light::Mode::Default => CounterMessage::ToggleDarkMode(true),
                         })
                         .left_stream()
                 } else {

@@ -15,7 +15,7 @@ fn main() -> iced::Result {
         CounterApp::update,
         CounterApp::view,
     )
-    .theme(|state| theme_from(&state.theme_name, &state.dark_theme.unwrap_or_default()))
+    .theme(|state| theme_from(&state.theme_name, &state.dark_mode.unwrap_or_default()))
     .window_size(Size {
         width: 512.0,
         height: 240.0,
@@ -25,7 +25,7 @@ fn main() -> iced::Result {
     .run_with(|| CounterApp {
         value: Default::default(),
         allow_negative: true,
-        dark_theme: Some(Theme::default() == Theme::Dark),
+        dark_mode: Some(Theme::default() == Theme::Dark),
         theme_name: counter_themes::GRUVBOX.to_owned(),
         system_info: None,
     })
