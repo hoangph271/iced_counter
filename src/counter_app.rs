@@ -1,7 +1,8 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    futures::{stream, StreamExt},
+    futures::{stream, Stream, StreamExt},
     subscription,
+    time::{self, Duration},
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Subscription, Task,
 };
@@ -20,6 +21,7 @@ pub struct CounterApp {
 
 #[derive(Clone, Debug)]
 pub enum CounterMessage {
+    AutoIncrement,
     Increment,
     Decrement,
     Reset,
@@ -103,6 +105,7 @@ impl CounterApp {
 
     pub fn update(&mut self, message: CounterMessage) -> Task<CounterMessage> {
         match message {
+            CounterMessage::AutoIncrement => self.value += 1,
             CounterMessage::Increment => self.value += 1,
             CounterMessage::Decrement => {
                 if self.value > 0 || self.allow_negative {
@@ -123,20 +126,29 @@ impl CounterApp {
     }
 
     pub fn subscription(&self) -> Subscription<CounterMessage> {
-        subscription::run(|| {
-            stream::once(dark_light::subscribe()).flat_map(|it| {
-                if let Ok(stream) = it {
-                    stream
-                        .map(|theme_mode| match theme_mode {
-                            dark_light::Mode::Dark => CounterMessage::ToggleDarkMode(true),
-                            dark_light::Mode::Light => CounterMessage::ToggleDarkMode(false),
-                            dark_light::Mode::Default => CounterMessage::ToggleDarkMode(true),
-                        })
-                        .left_stream()
-                } else {
-                    stream::once(async { CounterMessage::NoOp }).right_stream()
-                }
-            })
-        })
+        Subscription::batch([
+            create_time_subscription(),
+            subscription::run(create_theme_mode_stream),
+        ])
     }
+}
+
+fn create_time_subscription() -> Subscription<CounterMessage> {
+    time::every(Duration::from_secs(1)).map(|_| CounterMessage::AutoIncrement)
+}
+
+fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
+    stream::once(dark_light::subscribe()).flat_map(|it| {
+        if let Ok(stream) = it {
+            stream
+                .map(|theme_mode| match theme_mode {
+                    dark_light::Mode::Dark => CounterMessage::ToggleDarkMode(true),
+                    dark_light::Mode::Light => CounterMessage::ToggleDarkMode(false),
+                    dark_light::Mode::Default => CounterMessage::ToggleDarkMode(true),
+                })
+                .left_stream()
+        } else {
+            stream::once(async { CounterMessage::NoOp }).right_stream()
+        }
+    })
 }

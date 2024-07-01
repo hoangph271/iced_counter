@@ -8,4 +8,5 @@ dark-light = { git = "https://github.com/frewsxcv/rust-dark-light.git", version 
 iced = { git = "https://github.com/iced-rs/iced.git", version = "0.13.0-dev", features = [
     "auto-detect-theme",
     "system",
+    "tokio",
 ] }
