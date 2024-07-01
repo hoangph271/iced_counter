@@ -20,7 +20,7 @@ fn main() -> iced::Result {
         width: 512.0,
         height: 240.0,
     })
-    .load(|| fetch_information().map(|system_info| CounterMessage::SystemInfoLoaded(system_info)))
+    .load(|| fetch_information().map(CounterMessage::SystemInfoLoaded))
     .subscription(CounterApp::subscription)
     .run_with(|| CounterApp {
         value: Default::default(),
