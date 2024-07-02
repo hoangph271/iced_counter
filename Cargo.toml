@@ -10,3 +10,9 @@ iced = { git = "https://github.com/iced-rs/iced.git", version = "0.13.0-dev", fe
     "system",
     "tokio",
 ] }
+
+[profile.release]
+strip = true      # strip symbols from the binary
+lto = true
+codegen-units = 1
+panic = "abort"
