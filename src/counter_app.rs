@@ -2,18 +2,18 @@ use iced::{
     alignment::{Horizontal, Vertical},
     futures::{stream, Stream, StreamExt},
     time::{self, Duration},
-    widget::{button, checkbox, column, container, row, text, PickList, Toggler},
+    widget::{button, checkbox, column, container, row, text, PickList},
     Alignment, Element, Length, Subscription, Task,
 };
 
-use crate::counter_themes;
+use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
 use crate::system_info::{parse_system_info, SystemInfomation};
 
 #[derive(Debug)]
 pub struct CounterApp {
     pub value: isize,
     pub allow_negative: bool,
-    pub dark_mode: Option<bool>,
+    pub theme_mode: ThemeMode,
     pub theme_name: String,
     pub system_info: Option<SystemInfomation>,
 }
@@ -25,7 +25,7 @@ pub enum CounterMessage {
     Decrement,
     Reset,
     ToggleAllowNegative(bool),
-    ToggleDarkMode(bool),
+    ChangeThemeMode(ThemeMode),
     SwitchTheme(String),
     NoOp,
     SystemInfoLoaded(SystemInfomation),
@@ -35,10 +35,10 @@ impl CounterApp {
     pub fn view(&self) -> Element<CounterMessage> {
         container(
             column![
-                Toggler::new(
-                    Some("Dark theme".into()),
-                    self.dark_mode.unwrap_or_default(),
-                    CounterMessage::ToggleDarkMode
+                PickList::new(
+                    ALL_THEME_MODES,
+                    Some(&self.theme_mode),
+                    CounterMessage::ChangeThemeMode
                 )
                 .width(Length::Shrink),
                 row![
@@ -115,7 +115,7 @@ impl CounterApp {
             CounterMessage::ToggleAllowNegative(allow_negative) => {
                 self.allow_negative = allow_negative
             }
-            CounterMessage::ToggleDarkMode(dark_mode) => self.dark_mode = Some(dark_mode),
+            CounterMessage::ChangeThemeMode(theme_mode) => self.theme_mode = theme_mode,
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
@@ -141,9 +141,13 @@ fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
         if let Ok(stream) = it {
             stream
                 .map(|theme_mode| match theme_mode {
-                    dark_light::Mode::Dark => CounterMessage::ToggleDarkMode(true),
-                    dark_light::Mode::Light => CounterMessage::ToggleDarkMode(false),
-                    dark_light::Mode::Default => CounterMessage::ToggleDarkMode(true),
+                    dark_light::Mode::Dark => CounterMessage::ChangeThemeMode(ThemeMode::DarkTheme),
+                    dark_light::Mode::Light => {
+                        CounterMessage::ChangeThemeMode(ThemeMode::LightTheme)
+                    }
+                    dark_light::Mode::Default => {
+                        CounterMessage::ChangeThemeMode(ThemeMode::SystemDefault)
+                    }
                 })
                 .left_stream()
         } else {
