@@ -1,7 +1,6 @@
 use iced::{
     alignment::{Horizontal, Vertical},
     futures::{stream, Stream, StreamExt},
-    subscription,
     time::{self, Duration},
     widget::{button, checkbox, column, container, row, text, PickList, Toggler},
     Alignment, Element, Length, Subscription, Task,
@@ -128,7 +127,7 @@ impl CounterApp {
     pub fn subscription(&self) -> Subscription<CounterMessage> {
         Subscription::batch([
             create_time_subscription(),
-            subscription::run(create_theme_mode_stream),
+            Subscription::run(create_theme_mode_stream),
         ])
     }
 }
