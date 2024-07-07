@@ -1,6 +1,9 @@
 A simple counter application created for learning ***Iced***...!
 
 ### TODOs:
+- [ ] Fix ThemeMode PickList behavior
+  - [ ] ThemeMode::SystemDefault is not persisted when the system theme mode changes
+  - [ ] ThemeMode subscription should pause/cancel when ThemeMode::Light or ThemeMode::Dark is selected
 - [ ] toggle auto `AutoIncrement`
 - [x] `Increment` every second because why not...?
 - [x] Adapt system light/dark theme change
