@@ -2,7 +2,7 @@ use iced::{
     alignment::{Horizontal, Vertical},
     futures::{stream, Stream, StreamExt},
     time::{self, Duration},
-    widget::{button, checkbox, column, container, row, text, PickList},
+    widget::{button, checkbox, column, container, row, text, vertical_space, PickList},
     Alignment, Element, Length, Subscription, Task,
 };
 
@@ -13,7 +13,8 @@ use crate::system_info::{parse_system_info, SystemInfomation};
 pub struct CounterApp {
     pub value: isize,
     pub allow_negative: bool,
-    pub theme_mode: ThemeMode,
+    pub application_theme_mode: ThemeMode,
+    pub system_theme_mode: ThemeMode,
     pub theme_name: String,
     pub system_info: Option<SystemInfomation>,
 }
@@ -29,15 +30,17 @@ pub enum CounterMessage {
     SwitchTheme(String),
     NoOp,
     SystemInfoLoaded(SystemInfomation),
+    ChangeSystemThemeMode(ThemeMode),
 }
 
 impl CounterApp {
     pub fn view(&self) -> Element<CounterMessage> {
         container(
             column![
+                vertical_space().height(6),
                 PickList::new(
                     ALL_THEME_MODES,
-                    Some(&self.theme_mode),
+                    Some(&self.application_theme_mode),
                     CounterMessage::ChangeThemeMode
                 )
                 .width(Length::Shrink),
@@ -115,7 +118,10 @@ impl CounterApp {
             CounterMessage::ToggleAllowNegative(allow_negative) => {
                 self.allow_negative = allow_negative
             }
-            CounterMessage::ChangeThemeMode(theme_mode) => self.theme_mode = theme_mode,
+            CounterMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
+            CounterMessage::ChangeSystemThemeMode(theme_mode) => {
+                self.system_theme_mode = theme_mode;
+            }
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
@@ -141,12 +147,14 @@ fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
         if let Ok(stream) = it {
             stream
                 .map(|theme_mode| match theme_mode {
-                    dark_light::Mode::Dark => CounterMessage::ChangeThemeMode(ThemeMode::DarkTheme),
+                    dark_light::Mode::Dark => {
+                        CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
+                    }
                     dark_light::Mode::Light => {
-                        CounterMessage::ChangeThemeMode(ThemeMode::LightTheme)
+                        CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
                     }
                     dark_light::Mode::Default => {
-                        CounterMessage::ChangeThemeMode(ThemeMode::SystemDefault)
+                        CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
                     }
                 })
                 .left_stream()
