@@ -2,7 +2,7 @@ use iced::{
     alignment::{Horizontal, Vertical},
     futures::{stream, Stream, StreamExt},
     time::{self, Duration},
-    widget::{button, checkbox, column, container, row, text, vertical_space, PickList},
+    widget::{button, checkbox, column, container, row, text, vertical_space, PickList, Toggler},
     Alignment, Element, Length, Subscription, Task,
 };
 
@@ -13,6 +13,7 @@ use crate::system_info::{parse_system_info, SystemInfomation};
 pub struct CounterApp {
     pub value: isize,
     pub allow_negative: bool,
+    pub auto_increment_enabled: bool,
     pub application_theme_mode: ThemeMode,
     pub system_theme_mode: ThemeMode,
     pub theme_name: String,
@@ -22,6 +23,7 @@ pub struct CounterApp {
 #[derive(Clone, Debug)]
 pub enum CounterMessage {
     AutoIncrement,
+    ToggleAutoIncrement(bool),
     Increment,
     Decrement,
     Reset,
@@ -37,11 +39,17 @@ impl CounterApp {
     pub fn view(&self) -> Element<CounterMessage> {
         container(
             column![
-                vertical_space().height(6),
+                vertical_space().height(4),
                 PickList::new(
                     ALL_THEME_MODES,
                     Some(&self.application_theme_mode),
                     CounterMessage::ChangeThemeMode
+                )
+                .width(Length::Shrink),
+                Toggler::new(
+                    "Auto increment".to_owned(),
+                    self.auto_increment_enabled,
+                    CounterMessage::ToggleAutoIncrement
                 )
                 .width(Length::Shrink),
                 row![
@@ -107,7 +115,12 @@ impl CounterApp {
 
     pub fn update(&mut self, message: CounterMessage) -> Task<CounterMessage> {
         match message {
-            CounterMessage::AutoIncrement => self.value += 1,
+            CounterMessage::ToggleAutoIncrement(enabled) => self.auto_increment_enabled = enabled,
+            CounterMessage::AutoIncrement => {
+                if self.auto_increment_enabled {
+                    self.value += 1
+                }
+            }
             CounterMessage::Increment => self.value += 1,
             CounterMessage::Decrement => {
                 if self.value > 0 || self.allow_negative {
