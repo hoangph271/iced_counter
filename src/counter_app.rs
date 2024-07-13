@@ -101,7 +101,7 @@ impl CounterApp {
                     }
                 ),
                 if let Some(system_info) = &self.system_info {
-                    system_info_view(&system_info)
+                    system_info_view(system_info)
                 } else {
                     text("...").into()
                 },
