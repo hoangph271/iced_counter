@@ -6,8 +6,10 @@ use iced::{
     Alignment, Element, Length, Subscription, Task,
 };
 
-use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
-use crate::system_info::{parse_system_info, SystemInfomation};
+use crate::{
+    counter_themes::{self, ThemeMode, ALL_THEME_MODES},
+    system_info::{system_info_view, SystemInfomation},
+};
 
 #[derive(Debug)]
 pub struct CounterApp {
@@ -99,10 +101,10 @@ impl CounterApp {
                     }
                 ),
                 if let Some(system_info) = &self.system_info {
-                    text(parse_system_info(system_info))
+                    system_info_view(&system_info)
                 } else {
-                    text("...")
-                }
+                    text("...").into()
+                },
             ]
             .align_items(Alignment::Center)
             .spacing(12)

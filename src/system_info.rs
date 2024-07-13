@@ -1,10 +1,25 @@
 pub use iced::system::{fetch_information, Information as SystemInfomation};
+use iced::{
+    widget::{row, text},
+    Element,
+};
 
-pub fn parse_system_info(system_info: &SystemInfomation) -> String {
-    [
-        system_info.system_name.as_deref().unwrap_or("Unknown"),
-        system_info.system_kernel.as_deref().unwrap_or("Unknown"),
-        system_info.system_version.as_deref().unwrap_or("Unknown"),
+use crate::counter_app::CounterMessage;
+
+pub fn system_info_view(system_info: &SystemInfomation) -> Element<CounterMessage> {
+    let SystemInfomation {
+        system_name,
+        system_kernel,
+        system_version,
+        ..
+    } = system_info;
+
+    row![
+        text(system_name.as_deref().unwrap_or("Unknown")),
+        text("-"),
+        text(system_kernel.as_deref().unwrap_or("Unknown")),
+        text("-"),
+        text(system_version.as_deref().unwrap_or("Unknown")),
     ]
-    .join(" - ")
+    .into()
 }
