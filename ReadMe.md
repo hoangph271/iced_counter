@@ -1,10 +1,10 @@
 A simple counter application created for learning ***Iced***...!
 
 ### TODOs:
+- [ ] ThemeMode subscription should pause/cancel when ThemeMode::Light or ThemeMode::Dark is selected
+- [x] more styling for system information sentence
 - [x] Fix ThemeMode PickList behavior
   - [x] ThemeMode::SystemDefault is not persisted when the system theme mode changes
-- [ ] ThemeMode subscription should pause/cancel when ThemeMode::Light or ThemeMode::Dark is selected
-- [ ] more styling for system information sentence
 - [x] toggle auto `AutoIncrement`
 - [x] `Increment` every second because why not...?
 - [x] Adapt system light/dark theme change
