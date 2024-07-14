@@ -6,8 +6,10 @@ use iced::{
     Alignment, Element, Length, Subscription, Task,
 };
 
-use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
-use crate::system_info::{parse_system_info, SystemInfomation};
+use crate::{
+    counter_themes::{self, ThemeMode, ALL_THEME_MODES},
+    system_info::{system_info_view, SystemInfomation},
+};
 
 #[derive(Debug)]
 pub struct CounterApp {
@@ -40,12 +42,29 @@ impl CounterApp {
         container(
             column![
                 vertical_space().height(4),
-                PickList::new(
-                    ALL_THEME_MODES,
-                    Some(&self.application_theme_mode),
-                    CounterMessage::ChangeThemeMode
-                )
-                .width(Length::Shrink),
+                row![
+                    PickList::new(
+                        ALL_THEME_MODES,
+                        Some(&self.application_theme_mode),
+                        CounterMessage::ChangeThemeMode
+                    )
+                    .width(Length::Shrink),
+                    PickList::new(
+                        counter_themes::ALL_THEMES,
+                        Some(self.theme_name.as_str()),
+                        |theme_name| {
+                            match theme_name {
+                                counter_themes::DEFAULT
+                                | counter_themes::GRUVBOX
+                                | counter_themes::SOLARIZED => {
+                                    CounterMessage::SwitchTheme(theme_name.to_string())
+                                }
+                                _ => CounterMessage::NoOp,
+                            }
+                        }
+                    ),
+                ]
+                .spacing(16),
                 Toggler::new(
                     "Auto increment".to_owned(),
                     self.auto_increment_enabled,
@@ -84,25 +103,11 @@ impl CounterApp {
                 )
                 .align_x(Horizontal::Center)
                 .width(Length::Fill),
-                PickList::new(
-                    counter_themes::ALL_THEMES,
-                    Some(self.theme_name.as_str()),
-                    |theme_name| {
-                        match theme_name {
-                            counter_themes::DEFAULT
-                            | counter_themes::GRUVBOX
-                            | counter_themes::SOLARIZED => {
-                                CounterMessage::SwitchTheme(theme_name.to_string())
-                            }
-                            _ => CounterMessage::NoOp,
-                        }
-                    }
-                ),
                 if let Some(system_info) = &self.system_info {
-                    text(parse_system_info(system_info))
+                    system_info_view(system_info)
                 } else {
-                    text("...")
-                }
+                    text("...").into()
+                },
             ]
             .align_items(Alignment::Center)
             .spacing(12)

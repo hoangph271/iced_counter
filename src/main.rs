@@ -17,7 +17,7 @@ fn main() -> iced::Result {
     )
     .theme(theme_from_state)
     .window_size(Size {
-        width: 512.0,
+        width: 544.0,
         height: 320.0,
     })
     .load(|| fetch_information().map(CounterMessage::SystemInfoLoaded))
