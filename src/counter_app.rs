@@ -42,12 +42,29 @@ impl CounterApp {
         container(
             column![
                 vertical_space().height(4),
-                PickList::new(
-                    ALL_THEME_MODES,
-                    Some(&self.application_theme_mode),
-                    CounterMessage::ChangeThemeMode
-                )
-                .width(Length::Shrink),
+                row![
+                    PickList::new(
+                        ALL_THEME_MODES,
+                        Some(&self.application_theme_mode),
+                        CounterMessage::ChangeThemeMode
+                    )
+                    .width(Length::Shrink),
+                    PickList::new(
+                        counter_themes::ALL_THEMES,
+                        Some(self.theme_name.as_str()),
+                        |theme_name| {
+                            match theme_name {
+                                counter_themes::DEFAULT
+                                | counter_themes::GRUVBOX
+                                | counter_themes::SOLARIZED => {
+                                    CounterMessage::SwitchTheme(theme_name.to_string())
+                                }
+                                _ => CounterMessage::NoOp,
+                            }
+                        }
+                    ),
+                ]
+                .spacing(16),
                 Toggler::new(
                     "Auto increment".to_owned(),
                     self.auto_increment_enabled,
@@ -86,20 +103,6 @@ impl CounterApp {
                 )
                 .align_x(Horizontal::Center)
                 .width(Length::Fill),
-                PickList::new(
-                    counter_themes::ALL_THEMES,
-                    Some(self.theme_name.as_str()),
-                    |theme_name| {
-                        match theme_name {
-                            counter_themes::DEFAULT
-                            | counter_themes::GRUVBOX
-                            | counter_themes::SOLARIZED => {
-                                CounterMessage::SwitchTheme(theme_name.to_string())
-                            }
-                            _ => CounterMessage::NoOp,
-                        }
-                    }
-                ),
                 if let Some(system_info) = &self.system_info {
                     system_info_view(system_info)
                 } else {
