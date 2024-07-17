@@ -5,16 +5,17 @@ A simple counter application created for learning ***Iced***...!
 
 ### Lessons learned:
 
-As per commit `e3127f208a86396d6956d3877bb9448eb6735364`:
 These are the size in bytes of the executable when I altered the `[profile.release]` section of `Cargo.toml`,
 by enabling features, one by one from top to bottom:
 
 ```toml
 # Pop!_OS jammy 22.04 x86_64
+# Commit be25472aef61a6f4ea15c5982321fe31b28c83e2
+
 [profile.release]
-# without any optimization: 21_128
-strip = true              # 16_560
-lto = true                # 13_640
-codegen-units = 1         # 12_672
-panic = "abort"           # 11_308
+# without any optimization: 18_528
+strip = true              # 14_508
+lto = true                # 12_136
+panic = "abort"           # 10_728
+codegen-units = 1         # 10_160
 ```
