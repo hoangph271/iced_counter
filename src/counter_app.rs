@@ -85,7 +85,7 @@ impl CounterApp {
                         .on_press(CounterMessage::Increment),
                 ]
                 .spacing(12)
-                .align_items(Alignment::Center),
+                .align_y(Alignment::Center),
                 container(
                     row![
                         button("Reset")
@@ -99,7 +99,7 @@ impl CounterApp {
                             .on_toggle(CounterMessage::ToggleAllowNegative)
                     ]
                     .spacing(12)
-                    .align_items(Alignment::Center)
+                    .align_y(Alignment::Center)
                 )
                 .align_x(Horizontal::Center)
                 .width(Length::Fill),
@@ -109,7 +109,7 @@ impl CounterApp {
                     text("...").into()
                 },
             ]
-            .align_items(Alignment::Center)
+            .align_x(Alignment::Center)
             .spacing(12)
             .height(Length::Fill),
         )

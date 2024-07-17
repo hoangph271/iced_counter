@@ -18,17 +18,21 @@ fn main() -> iced::Result {
     .theme(theme_from_state)
     .window_size(Size {
         width: 544.0,
-        height: 320.0,
+        height: 288.0,
     })
-    .load(|| fetch_information().map(CounterMessage::SystemInfoLoaded))
     .subscription(CounterApp::subscription)
-    .run_with(|| CounterApp {
-        value: Default::default(),
-        allow_negative: true,
-        auto_increment_enabled: false,
-        application_theme_mode: ThemeMode::SystemDefault,
-        system_theme_mode: counter_themes::get_system_theme_mode(),
-        theme_name: counter_themes::GRUVBOX.to_owned(),
-        system_info: None,
+    .run_with(|| {
+        (
+            CounterApp {
+                value: Default::default(),
+                allow_negative: true,
+                auto_increment_enabled: false,
+                application_theme_mode: ThemeMode::SystemDefault,
+                system_theme_mode: counter_themes::get_system_theme_mode(),
+                theme_name: counter_themes::GRUVBOX.to_owned(),
+                system_info: None,
+            },
+            fetch_information().map(CounterMessage::SystemInfoLoaded),
+        )
     })
 }
