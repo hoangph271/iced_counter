@@ -1,4 +1,4 @@
-A simple counter application created for learning ***Iced***...!
+A scope creeped counter application created for learning ***Iced***...!
 
 ### TODOs:
 - [ ] ThemeMode subscription should pause/cancel when ThemeMode::Light or ThemeMode::Dark is selected
