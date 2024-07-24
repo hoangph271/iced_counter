@@ -63,6 +63,6 @@ pub fn theme_from_state(state: &CounterApp) -> Theme {
         (SOLARIZED, ThemeMode::Light) => Theme::SolarizedLight,
         (_, ThemeMode::Dark) => Theme::Dark,
         (_, ThemeMode::Light) => Theme::Light,
-        (_, ThemeMode::SystemDefault) => panic!("ThemeMode should NOT be SystemDefault by now"),
+        (_, ThemeMode::SystemDefault) => Theme::GruvboxLight,
     }
 }
