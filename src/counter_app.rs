@@ -65,12 +65,10 @@ impl CounterApp {
                     ),
                 ]
                 .spacing(16),
-                Toggler::new(
-                    "Auto increment".to_owned(),
-                    self.auto_increment_enabled,
-                    CounterMessage::ToggleAutoIncrement
-                )
-                .width(Length::Shrink),
+                Toggler::new(self.auto_increment_enabled,)
+                    .label("Auto increment".to_owned())
+                    .on_toggle(CounterMessage::ToggleAutoIncrement)
+                    .width(Length::Shrink),
                 row![
                     button(text("-").size(25)).width(35).on_press_maybe(
                         if !self.allow_negative && self.value <= 0 {
