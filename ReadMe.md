@@ -1,9 +1,12 @@
+# `iced_counter`
+
 A scope creeped counter application created for learning ***Iced***...!
 
-### TODOs:
+## TODOs
+
 - [ ] ThemeMode subscription should pause/cancel when ThemeMode::Light or ThemeMode::Dark is selected
 
-### Lessons learned:
+## Lessons learned
 
 These are the size in bytes of the executable when I altered the `[profile.release]` section of `Cargo.toml`,
 by enabling features, one by one from top to bottom:
