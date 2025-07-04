@@ -36,7 +36,7 @@ pub enum CounterMessage {
 }
 
 impl CounterApp {
-    pub fn view(&self) -> Element<CounterMessage> {
+    pub fn view(&'_ self) -> Element<'_, CounterMessage> {
         container(
             column![
                 vertical_space().height(4),

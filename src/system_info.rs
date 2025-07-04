@@ -7,7 +7,7 @@ use iced::{
 
 use crate::counter_app::CounterMessage;
 
-pub fn system_info_view(system_info: &SystemInfomation) -> Element<CounterMessage> {
+pub fn system_info_view(system_info: &'_ SystemInfomation) -> Element<'_, CounterMessage> {
     let SystemInfomation {
         system_name,
         system_kernel,
