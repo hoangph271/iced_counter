@@ -36,9 +36,13 @@ pub const ALL_THEME_MODES: [ThemeMode; 3] =
 
 pub fn get_system_theme_mode() -> ThemeMode {
     match dark_light::detect() {
-        dark_light::Mode::Dark => ThemeMode::Dark,
-        dark_light::Mode::Light => ThemeMode::Light,
-        dark_light::Mode::Default => ThemeMode::SystemDefault,
+        Ok(dark_light::Mode::Dark) => ThemeMode::Dark,
+        Ok(dark_light::Mode::Light) => ThemeMode::Light,
+        Ok(dark_light::Mode::Unspecified) => ThemeMode::SystemDefault,
+        Err(e) => {
+            eprintln!("{e}");
+            ThemeMode::SystemDefault
+        }
     }
 }
 

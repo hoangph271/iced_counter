@@ -1,6 +1,5 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    futures::{stream, Stream, StreamExt},
     time::{self, Duration},
     widget::{button, checkbox, column, container, row, text, vertical_space, PickList, Toggler},
     Alignment, Element, Length, Subscription, Task,
@@ -34,7 +33,6 @@ pub enum CounterMessage {
     SwitchTheme(String),
     NoOp,
     SystemInfoLoaded(SystemInfomation),
-    ChangeSystemThemeMode(ThemeMode),
 }
 
 impl CounterApp {
@@ -135,9 +133,6 @@ impl CounterApp {
                 self.allow_negative = allow_negative
             }
             CounterMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
-            CounterMessage::ChangeSystemThemeMode(theme_mode) => {
-                self.system_theme_mode = theme_mode;
-            }
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
@@ -149,7 +144,7 @@ impl CounterApp {
     pub fn subscription(&self) -> Subscription<CounterMessage> {
         Subscription::batch([
             create_time_subscription(),
-            Subscription::run(create_theme_mode_stream),
+            // Subscription::run(create_theme_mode_stream),
         ])
     }
 }
@@ -158,24 +153,25 @@ fn create_time_subscription() -> Subscription<CounterMessage> {
     time::every(Duration::from_secs(1)).map(|_| CounterMessage::AutoIncrement)
 }
 
-fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
-    stream::once(dark_light::subscribe()).flat_map(|it| {
-        if let Ok(stream) = it {
-            stream
-                .map(|theme_mode| match theme_mode {
-                    dark_light::Mode::Dark => {
-                        CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
-                    }
-                    dark_light::Mode::Light => {
-                        CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
-                    }
-                    dark_light::Mode::Default => {
-                        CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
-                    }
-                })
-                .left_stream()
-        } else {
-            stream::once(async { CounterMessage::NoOp }).right_stream()
-        }
-    })
-}
+// ? dark_light::subscribe is removed on dark-light@2.0.0, see https://github.com/rust-dark-light/dark-light/pull/60
+// fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
+//     stream::once(dark_light::subscribe()).flat_map(|it| {
+//         if let Ok(stream) = it {
+//             stream
+//                 .map(|theme_mode| match theme_mode {
+//                     dark_light::Mode::Dark => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
+//                     }
+//                     dark_light::Mode::Light => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
+//                     }
+//                     dark_light::Mode::Default => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
+//                     }
+//                 })
+//                 .left_stream()
+//         } else {
+//             stream::once(async { CounterMessage::NoOp }).right_stream()
+//         }
+//     })
+// }
