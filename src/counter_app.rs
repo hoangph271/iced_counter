@@ -7,7 +7,7 @@ use iced::{
 
 use crate::{
     counter_themes::{self, ThemeMode, ALL_THEME_MODES},
-    system_info::{system_info_view, SystemInfomation},
+    rust_fs::{RustFs, RustFsEvent, SystemInfomation},
 };
 
 #[derive(Debug)]
@@ -19,6 +19,7 @@ pub struct CounterApp {
     pub system_theme_mode: ThemeMode,
     pub theme_name: String,
     pub system_info: Option<SystemInfomation>,
+    pub rust_fs: RustFs,
 }
 
 #[derive(Clone, Debug)]
@@ -33,6 +34,7 @@ pub enum CounterMessage {
     SwitchTheme(String),
     NoOp,
     SystemInfoLoaded(SystemInfomation),
+    RustFs(RustFsEvent),
 }
 
 impl CounterApp {
@@ -99,11 +101,7 @@ impl CounterApp {
                 )
                 .align_x(Horizontal::Center)
                 .width(Length::Fill),
-                if let Some(system_info) = &self.system_info {
-                    system_info_view(system_info)
-                } else {
-                    text("...").into()
-                },
+                self.rust_fs.view(),
             ]
             .align_x(Alignment::Center)
             .spacing(12)
@@ -136,6 +134,9 @@ impl CounterApp {
             CounterMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             CounterMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             CounterMessage::NoOp => {}
+            CounterMessage::RustFs(rust_fs_event) => {
+                return self.rust_fs.update(rust_fs_event);
+            }
         };
 
         Task::none()
@@ -146,6 +147,21 @@ impl CounterApp {
             create_time_subscription(),
             // Subscription::run(create_theme_mode_stream),
         ])
+    }
+
+    pub(crate) fn new() -> Self {
+        Self {
+            value: Default::default(),
+            allow_negative: true,
+            auto_increment_enabled: false,
+            application_theme_mode: ThemeMode::SystemDefault,
+            system_theme_mode: counter_themes::get_system_theme_mode(),
+            theme_name: counter_themes::GRUVBOX.to_owned(),
+            system_info: None,
+            rust_fs: RustFs {
+                watching_path: std::env::home_dir().map(|home_path| home_path.join("Downloads")),
+            },
+        }
     }
 }
 

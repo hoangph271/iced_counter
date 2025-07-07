@@ -4,24 +4,16 @@ mod counter_app;
 mod counter_themes;
 
 use counter_app::{CounterApp, CounterMessage};
-use counter_themes::{theme_from_state, ThemeMode};
+use counter_themes::theme_from_state;
 
-mod system_info;
-use system_info::fetch_information;
+mod rust_fs;
+use rust_fs::fetch_information;
 
 fn main() -> iced::Result {
     iced::application(
         || {
             (
-                CounterApp {
-                    value: Default::default(),
-                    allow_negative: true,
-                    auto_increment_enabled: false,
-                    application_theme_mode: ThemeMode::SystemDefault,
-                    system_theme_mode: counter_themes::get_system_theme_mode(),
-                    theme_name: counter_themes::GRUVBOX.to_owned(),
-                    system_info: None,
-                },
+                CounterApp::new(),
                 fetch_information().map(CounterMessage::SystemInfoLoaded),
             )
         },

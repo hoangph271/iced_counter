@@ -10,6 +10,7 @@ iced = { git = "https://github.com/iced-rs/iced.git", version = "0.14.0-dev", fe
     "system",
     "tokio",
 ] }
+rfd = "0.15.3"
 
 [profile.release]
 strip = true
