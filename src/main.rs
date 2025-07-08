@@ -4,8 +4,8 @@ use iced::Size;
 #[cfg(not(feature = "system_info"))]
 use iced::Task;
 
-mod widgets;
 mod omni_app;
+mod widgets;
 
 use omni_app::OmniApp;
 use widgets::*;

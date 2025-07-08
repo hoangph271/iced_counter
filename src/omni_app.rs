@@ -4,26 +4,23 @@ use iced::{
     Alignment, Element, Length, Subscription, Task,
 };
 
-#[cfg(feature = "system_info")]
-use iced::widget::text;
-
 use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
 
 #[cfg(feature = "system_info")]
-use crate::widgets::system_info::{system_info_view, SystemInfomation};
+use crate::widgets::system_info::{SystemInfo, SystemInfomation};
 
 #[cfg(feature = "counter")]
 use crate::widgets::counter::{Counter, CounterMessage};
 
 #[derive(Debug)]
-pub struct OmniApp {
+pub(super) struct OmniApp {
     #[cfg(feature = "counter")]
     counter: Counter,
     pub application_theme_mode: ThemeMode,
     pub system_theme_mode: ThemeMode,
     pub theme_name: String,
     #[cfg(feature = "system_info")]
-    pub system_info: Option<SystemInfomation>,
+    pub system_info: SystemInfo,
 }
 
 #[derive(Clone, Debug)]
@@ -46,7 +43,7 @@ impl OmniApp {
             system_theme_mode: counter_themes::get_system_theme_mode(),
             theme_name: counter_themes::GRUVBOX.to_owned(),
             #[cfg(feature = "system_info")]
-            system_info: None,
+            system_info: SystemInfo::init(),
         }
     }
 
@@ -87,13 +84,7 @@ impl OmniApp {
             )
             .push_maybe(
                 #[cfg(feature = "system_info")]
-                Some(
-                    self.system_info
-                        .as_ref()
-                        .map_or(text("...").into(), |system_info| {
-                            system_info_view(system_info)
-                        }),
-                ),
+                Some(self.system_info.view()),
                 #[cfg(not(feature = "system_info"))]
                 None::<Element<'_, OmniAppMessage>>,
             )
@@ -119,7 +110,9 @@ impl OmniApp {
             OmniAppMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
             OmniAppMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             #[cfg(feature = "system_info")]
-            OmniAppMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
+            OmniAppMessage::SystemInfoLoaded(system_info) => {
+                return self.system_info.update(system_info)
+            }
             OmniAppMessage::NoOp => {}
         };
 
