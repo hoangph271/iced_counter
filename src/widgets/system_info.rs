@@ -5,18 +5,22 @@ use iced::{
     Element, Font, Task,
 };
 
-use crate::omni_app::OmniAppMessage;
-
 #[derive(Debug)]
 pub struct SystemInfo {
     pub system_info: Option<SystemInfomation>,
 }
+
+#[derive(Debug, Clone)]
+pub enum SystemInfoMessage {
+    SystemInformationLoaded(SystemInfomation),
+}
+
 impl SystemInfo {
     pub(crate) fn init() -> SystemInfo {
         SystemInfo { system_info: None }
     }
 
-    pub(crate) fn view(&self) -> Element<'_, OmniAppMessage> {
+    pub(crate) fn view(&self) -> Element<'_, SystemInfoMessage> {
         self.system_info
             .as_ref()
             .map_or(text("...").into(), |system_info| {
@@ -54,9 +58,16 @@ impl SystemInfo {
             })
     }
 
-    pub(crate) fn update(&mut self, system_info: SystemInfomation) -> iced::Task<OmniAppMessage> {
+    pub(crate) fn update(
+        &mut self,
+        system_info: SystemInfomation,
+    ) -> iced::Task<SystemInfoMessage> {
         self.system_info = Some(system_info);
 
         Task::none()
+    }
+
+    pub(crate) fn fetch_information() -> Task<SystemInfoMessage> {
+        fetch_information().map(SystemInfoMessage::SystemInformationLoaded)
     }
 }

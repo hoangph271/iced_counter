@@ -19,5 +19,7 @@ codegen-units = 1
 
 [features]
 system_info = []
-
+instax_framer = []
 counter = []
+
+default = ["instax_framer"]

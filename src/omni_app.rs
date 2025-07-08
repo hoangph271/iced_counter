@@ -7,10 +7,13 @@ use iced::{
 use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
 
 #[cfg(feature = "system_info")]
-use crate::widgets::system_info::{SystemInfo, SystemInfomation};
+use crate::widgets::system_info::{SystemInfo, SystemInfoMessage};
 
 #[cfg(feature = "counter")]
 use crate::widgets::counter::{Counter, CounterMessage};
+
+#[cfg(feature = "instax_framer")]
+use crate::widgets::instax_framer::{InstaxFramer, InstaxFramerMessage};
 
 #[derive(Debug)]
 pub(super) struct OmniApp {
@@ -21,6 +24,8 @@ pub(super) struct OmniApp {
     pub theme_name: String,
     #[cfg(feature = "system_info")]
     pub system_info: SystemInfo,
+    #[cfg(feature = "instax_framer")]
+    pub instax_framer: InstaxFramer,
 }
 
 #[derive(Clone, Debug)]
@@ -31,7 +36,9 @@ pub enum OmniAppMessage {
     #[cfg(feature = "counter")]
     CounterEvent(CounterMessage),
     #[cfg(feature = "system_info")]
-    SystemInfoLoaded(SystemInfomation),
+    SystemInfo(SystemInfoMessage),
+    #[cfg(feature = "instax_framer")]
+    InstaxFramer(InstaxFramerMessage),
 }
 
 impl OmniApp {
@@ -44,6 +51,8 @@ impl OmniApp {
             theme_name: counter_themes::GRUVBOX.to_owned(),
             #[cfg(feature = "system_info")]
             system_info: SystemInfo::init(),
+            #[cfg(feature = "instax_framer")]
+            instax_framer: InstaxFramer::init(),
         }
     }
 
@@ -84,8 +93,14 @@ impl OmniApp {
             )
             .push_maybe(
                 #[cfg(feature = "system_info")]
-                Some(self.system_info.view()),
+                Some(self.system_info.view().map(OmniAppMessage::SystemInfo)),
                 #[cfg(not(feature = "system_info"))]
+                None::<Element<'_, OmniAppMessage>>,
+            )
+            .push_maybe(
+                #[cfg(feature = "instax_framer")]
+                Some(self.instax_framer.view().map(OmniAppMessage::InstaxFramer)),
+                #[cfg(not(feature = "instax_framer"))]
                 None::<Element<'_, OmniAppMessage>>,
             )
             .align_x(Alignment::Center)
@@ -110,9 +125,14 @@ impl OmniApp {
             OmniAppMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
             OmniAppMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             #[cfg(feature = "system_info")]
-            OmniAppMessage::SystemInfoLoaded(system_info) => {
-                return self.system_info.update(system_info)
-            }
+            OmniAppMessage::SystemInfo(system_info) => match system_info {
+                SystemInfoMessage::SystemInformationLoaded(information) => {
+                    return self
+                        .system_info
+                        .update(information)
+                        .map(OmniAppMessage::SystemInfo)
+                }
+            },
             OmniAppMessage::NoOp => {}
         };
 
