@@ -5,9 +5,9 @@ use iced::{
     Element, Font,
 };
 
-use crate::counter_app::CounterMessage;
+use crate::omni_app::OmniAppMessage;
 
-pub fn system_info_view(system_info: &'_ SystemInfomation) -> Element<'_, CounterMessage> {
+pub fn system_info_view(system_info: &'_ SystemInfomation) -> Element<'_, OmniAppMessage> {
     let SystemInfomation {
         system_name,
         system_kernel,

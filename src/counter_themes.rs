@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use iced::Theme;
 
-use crate::counter_app::CounterApp;
+use crate::omni_app::OmniApp;
 
 pub const DEFAULT: &str = "Default";
 pub const GRUVBOX: &str = "Gruvbox";
@@ -46,8 +46,8 @@ pub fn get_system_theme_mode() -> ThemeMode {
     }
 }
 
-pub fn theme_from_state(state: &CounterApp) -> Theme {
-    let CounterApp {
+pub fn theme_from_state(state: &OmniApp) -> Theme {
+    let OmniApp {
         theme_name,
         application_theme_mode: theme_mode,
         system_theme_mode,
