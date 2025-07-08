@@ -9,13 +9,13 @@ use std::time::Duration;
 use crate::omni_app::CounterMessage;
 
 #[derive(Debug, Clone)]
-pub(super) struct Counter {
+pub(crate) struct Counter {
     value: isize,
     allow_negative: bool,
     auto_increment_enabled: bool,
 }
 impl Counter {
-    pub(super) fn update(&mut self, counter_event: CounterMessage) -> Task<CounterMessage> {
+    pub(crate) fn update(&mut self, counter_event: CounterMessage) -> Task<CounterMessage> {
         match counter_event {
             CounterMessage::ToggleAutoIncrement(enabled) => self.auto_increment_enabled = enabled,
             CounterMessage::AutoIncrement => {
@@ -38,7 +38,7 @@ impl Counter {
         Task::none()
     }
 
-    pub(super) fn view(&self) -> Element<'_, CounterMessage> {
+    pub(crate) fn view(&self) -> Element<'_, CounterMessage> {
         column![
             Toggler::new(self.auto_increment_enabled,)
                 .label("Auto increment".to_owned())
@@ -81,7 +81,7 @@ impl Counter {
         .into()
     }
 
-    pub(super) fn create_time_subscription() -> Subscription<CounterMessage> {
+    pub(crate) fn create_auto_increment_subscription() -> Subscription<CounterMessage> {
         time::every(Duration::from_secs(1)).map(|_| CounterMessage::AutoIncrement)
     }
 

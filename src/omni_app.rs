@@ -111,7 +111,7 @@ impl OmniApp {
 
     pub fn subscription(&self) -> Subscription<OmniAppMessage> {
         Subscription::batch([
-            Counter::create_time_subscription().map(OmniAppMessage::CounterEvent),
+            Counter::create_auto_increment_subscription().map(OmniAppMessage::CounterEvent),
             // Subscription::run(create_theme_mode_stream),
         ])
     }
