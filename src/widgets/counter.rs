@@ -6,7 +6,15 @@ use iced::{
 };
 use std::time::Duration;
 
-use crate::omni_app::CounterMessage;
+#[derive(Clone, Debug)]
+pub enum CounterMessage {
+    AutoIncrement,
+    ToggleAutoIncrement(bool),
+    Increment,
+    Decrement,
+    Reset,
+    ToggleAllowNegative(bool),
+}
 
 #[derive(Debug, Clone)]
 pub(crate) struct Counter {

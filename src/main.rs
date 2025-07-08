@@ -1,18 +1,25 @@
+#[cfg(feature = "system_info")]
+use crate::omni_app::OmniAppMessage;
 use iced::Size;
+#[cfg(not(feature = "system_info"))]
+use iced::Task;
 
 mod widgets;
 // mod counter_themes;
 mod omni_app;
 
-use omni_app::{OmniApp, OmniAppMessage};
-use widgets::{counter, counter_themes, system_info};
+use omni_app::OmniApp;
+use widgets::*;
 
 fn main() -> iced::Result {
     iced::application(
         || {
             (
                 OmniApp::init(),
+                #[cfg(feature = "system_info")]
                 system_info::fetch_information().map(OmniAppMessage::SystemInfoLoaded),
+                #[cfg(not(feature = "system_info"))]
+                Task::none(),
             )
         },
         OmniApp::update,

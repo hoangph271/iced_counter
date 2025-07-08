@@ -1,50 +1,48 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    widget::{column, container, row, text, vertical_space, PickList},
+    widget::{column, container, row, vertical_space, PickList},
     Alignment, Element, Length, Subscription, Task,
 };
 
+#[cfg(feature = "system_info")]
+use iced::widget::text;
+
 use crate::{
-    counter::Counter,
+    // counter::Counter,
     counter_themes::{self, ThemeMode, ALL_THEME_MODES},
-    system_info::{system_info_view, SystemInfomation},
 };
+
+#[cfg(feature = "system_info")]
+use crate::widgets::system_info::{system_info_view, SystemInfomation};
 
 #[derive(Debug)]
 pub struct OmniApp {
-    counter: Counter,
+    // counter: Counter,
     pub application_theme_mode: ThemeMode,
     pub system_theme_mode: ThemeMode,
     pub theme_name: String,
+    #[cfg(feature = "system_info")]
     pub system_info: Option<SystemInfomation>,
 }
 
 #[derive(Clone, Debug)]
-pub enum CounterMessage {
-    AutoIncrement,
-    ToggleAutoIncrement(bool),
-    Increment,
-    Decrement,
-    Reset,
-    ToggleAllowNegative(bool),
-}
-
-#[derive(Clone, Debug)]
 pub enum OmniAppMessage {
-    CounterEvent(CounterMessage),
     ChangeThemeMode(ThemeMode),
     SwitchTheme(String),
     NoOp,
+    // CounterEvent(CounterMessage),
+    #[cfg(feature = "system_info")]
     SystemInfoLoaded(SystemInfomation),
 }
 
 impl OmniApp {
     pub fn init() -> Self {
         Self {
-            counter: Counter::init(),
+            // counter: Counter::init(),
             application_theme_mode: ThemeMode::SystemDefault,
             system_theme_mode: counter_themes::get_system_theme_mode(),
             theme_name: counter_themes::GRUVBOX.to_owned(),
+            #[cfg(feature = "system_info")]
             system_info: None,
         }
     }
@@ -75,33 +73,43 @@ impl OmniApp {
                         }
                     ),
                 ]
-                .spacing(16),
-                self.counter.view().map(OmniAppMessage::CounterEvent),
-                if let Some(system_info) = &self.system_info {
-                    system_info_view(system_info)
-                } else {
-                    text("...").into()
-                },
+                .spacing(16)
+                .align_y(Alignment::Center),
+                // self.counter.view().map(OmniAppMessage::CounterEvent),
             ]
+            .push_maybe(
+                #[cfg(feature = "system_info")]
+                Some(
+                    self.system_info
+                        .as_ref()
+                        .map_or(text("...").into(), |system_info| {
+                            system_info_view(system_info)
+                        }),
+                ),
+                #[cfg(not(feature = "system_info"))]
+                None::<Element<'_, OmniAppMessage>>,
+            )
             .align_x(Alignment::Center)
             .spacing(12)
             .height(Length::Fill),
         )
         .align_x(Horizontal::Center)
         .align_y(Vertical::Center)
+        .width(Length::Fill)
         .into()
     }
 
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
-            OmniAppMessage::CounterEvent(counter_event) => {
-                return self
-                    .counter
-                    .update(counter_event)
-                    .map(OmniAppMessage::CounterEvent)
-            }
+            // OmniAppMessage::CounterEvent(counter_event) => {
+            //     return self
+            //         .counter
+            //         .update(counter_event)
+            //         .map(OmniAppMessage::CounterEvent)
+            // }
             OmniAppMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
             OmniAppMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
+            #[cfg(feature = "system_info")]
             OmniAppMessage::SystemInfoLoaded(system_info) => self.system_info = Some(system_info),
             OmniAppMessage::NoOp => {}
         };
@@ -111,7 +119,7 @@ impl OmniApp {
 
     pub fn subscription(&self) -> Subscription<OmniAppMessage> {
         Subscription::batch([
-            Counter::create_auto_increment_subscription().map(OmniAppMessage::CounterEvent),
+            // Counter::create_auto_increment_subscription().map(OmniAppMessage::CounterEvent),
             // Subscription::run(create_theme_mode_stream),
         ])
     }
