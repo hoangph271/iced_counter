@@ -12,13 +12,13 @@ These are the size in bytes of the executable when I altered the `[profile.relea
 by enabling features, one by one from top to bottom:
 
 ```toml
-# Pop!_OS jammy 22.04 x86_64
-# Commit be25472aef61a6f4ea15c5982321fe31b28c83e2
+# Pop!_OS Noble Numbat 24.04 x86_64
+# Commit fca0381d02a3e165860ee158d9bd64e8e1677f8a
 
 [profile.release]
-# without any optimization: 18_528
-strip = true              # 14_508
-lto = true                # 12_136
-panic = "abort"           # 10_728
-codegen-units = 1         # 10_160
+# without any optimization: 24_084
+strip = true              # 19_120
+lto = true                # 16_348
+panic = "abort"           # 14_504
+codegen-units = 1         # 13_592
 ```
