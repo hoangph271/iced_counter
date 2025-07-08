@@ -5,7 +5,6 @@ use iced::Size;
 use iced::Task;
 
 mod widgets;
-// mod counter_themes;
 mod omni_app;
 
 use omni_app::OmniApp;

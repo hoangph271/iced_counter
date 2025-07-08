@@ -19,3 +19,5 @@ codegen-units = 1
 
 [features]
 system_info = []
+
+counter = []
