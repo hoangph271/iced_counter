@@ -58,11 +58,12 @@ impl SystemInfo {
             })
     }
 
-    pub(crate) fn update(
-        &mut self,
-        system_info: SystemInfomation,
-    ) -> iced::Task<SystemInfoMessage> {
-        self.system_info = Some(system_info);
+    pub(crate) fn update(&mut self, message: SystemInfoMessage) -> iced::Task<SystemInfoMessage> {
+        match message {
+            SystemInfoMessage::SystemInformationLoaded(information) => {
+                self.system_info = Some(information);
+            }
+        }
 
         Task::none()
     }

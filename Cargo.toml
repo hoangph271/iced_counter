@@ -22,4 +22,6 @@ system_info = []
 instax_framer = []
 counter = []
 
+all = ["instax_framer", "system_info", "counter"]
+
 default = ["instax_framer"]

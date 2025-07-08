@@ -125,14 +125,18 @@ impl OmniApp {
             OmniAppMessage::ChangeThemeMode(theme_mode) => self.application_theme_mode = theme_mode,
             OmniAppMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             #[cfg(feature = "system_info")]
-            OmniAppMessage::SystemInfo(system_info) => match system_info {
-                SystemInfoMessage::SystemInformationLoaded(information) => {
-                    return self
-                        .system_info
-                        .update(information)
-                        .map(OmniAppMessage::SystemInfo)
-                }
-            },
+            OmniAppMessage::SystemInfo(system_info) => {
+                return self
+                    .system_info
+                    .update(system_info)
+                    .map(OmniAppMessage::SystemInfo)
+            }
+            OmniAppMessage::InstaxFramer(message) => {
+                return self
+                    .instax_framer
+                    .update(message)
+                    .map(OmniAppMessage::InstaxFramer);
+            }
             OmniAppMessage::NoOp => {}
         };
 

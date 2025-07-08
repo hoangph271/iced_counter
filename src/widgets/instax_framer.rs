@@ -1,17 +1,38 @@
-use iced::{widget::text, Element};
+use std::path::PathBuf;
 
-#[derive(Debug)]
-pub struct InstaxFramer {}
+use iced::{
+    widget::{button, text},
+    Element, Task,
+};
 
-impl InstaxFramer {
-    pub(crate) fn init() -> InstaxFramer {
-        Self {}
-    }
-
-    pub(crate) fn view(&self) -> Element<'_, InstaxFramerMessage> {
-        text("...").into()
-    }
+#[derive(Debug, Default)]
+pub struct InstaxFramer {
+    selected_file: Option<PathBuf>,
 }
 
 #[derive(Debug, Clone)]
-pub enum InstaxFramerMessage {}
+pub enum InstaxFramerMessage {
+    PickImage,
+}
+
+impl InstaxFramer {
+    pub(crate) fn init() -> InstaxFramer {
+        Self {
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn view(&self) -> Element<'_, InstaxFramerMessage> {
+        let Some(selected_file) = &self.selected_file else {
+            return button(text("Pick an image file"))
+                .on_press(InstaxFramerMessage::PickImage)
+                .into();
+        };
+
+        text(format!("{}", selected_file.to_string_lossy())).into()
+    }
+
+    pub(crate) fn update(&self, _message: InstaxFramerMessage) -> Task<InstaxFramerMessage> {
+        todo!()
+    }
+}
