@@ -150,6 +150,16 @@ impl OmniApp {
             // Subscription::run(create_theme_mode_stream),
         ])
     }
+
+    pub(crate) fn start_up_tasks() -> Task<OmniAppMessage> {
+        #[allow(unused_mut)]
+        let mut start_up_tasks = Vec::new();
+
+        #[cfg(feature = "system_info")]
+        start_up_tasks.push(SystemInfo::fetch_information().map(OmniAppMessage::SystemInfo));
+
+        Task::batch(start_up_tasks)
+    }
 }
 
 // ? dark_light::subscribe is removed on dark-light@2.0.0, see https://github.com/rust-dark-light/dark-light/pull/60
