@@ -131,6 +131,7 @@ impl OmniApp {
                     .update(system_info)
                     .map(OmniAppMessage::SystemInfo)
             }
+            #[cfg(feature = "instax_framer")]
             OmniAppMessage::InstaxFramer(message) => {
                 return self
                     .instax_framer
@@ -151,12 +152,17 @@ impl OmniApp {
         ])
     }
 
-    pub(crate) fn start_up_tasks() -> Task<OmniAppMessage> {
+    pub(crate) fn start_up_tasks(&self) -> Task<OmniAppMessage> {
+        #[allow(clippy::vec_init_then_push)]
         #[allow(unused_mut)]
-        let mut start_up_tasks = Vec::new();
-
-        #[cfg(feature = "system_info")]
-        start_up_tasks.push(SystemInfo::fetch_information().map(OmniAppMessage::SystemInfo));
+        let mut start_up_tasks = vec![
+            #[cfg(feature = "system_info")]
+            SystemInfo::start_up_tasks().map(OmniAppMessage::SystemInfo),
+            #[cfg(feature = "instax_framer")]
+            self.instax_framer
+                .start_up_tasks()
+                .map(OmniAppMessage::InstaxFramer),
+        ];
 
         Task::batch(start_up_tasks)
     }

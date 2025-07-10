@@ -68,7 +68,7 @@ impl SystemInfo {
         Task::none()
     }
 
-    pub(crate) fn fetch_information() -> Task<SystemInfoMessage> {
+    pub(crate) fn start_up_tasks() -> Task<SystemInfoMessage> {
         fetch_information().map(SystemInfoMessage::SystemInformationLoaded)
     }
 }

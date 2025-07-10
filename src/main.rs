@@ -8,7 +8,13 @@ use widgets::*;
 
 fn main() -> iced::Result {
     iced::application(
-        || (OmniApp::init(), OmniApp::start_up_tasks()),
+        || {
+            let omni_app = OmniApp::init();
+
+            let start_up_tasks = omni_app.start_up_tasks();
+
+            (omni_app, start_up_tasks)
+        },
         OmniApp::update,
         OmniApp::view,
     )
