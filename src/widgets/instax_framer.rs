@@ -30,23 +30,27 @@ impl InstaxFramer {
     }
 
     pub(crate) fn view(&self) -> Element<'_, InstaxFramerMessage> {
+        let width = 460;
+        // let height = 620;
+        let height = 460;
+
         match (&self.selected_file, &self.loaded_image) {
             (None, _) => button(text("Pick an image file"))
                 .on_press(InstaxFramerMessage::PickImage)
                 .into(),
             (Some(_), None) => container(text("Loading..."))
                 .align_x(Horizontal::Center)
-                .width(460)
-                .height(620)
+                .width(width)
+                .height(height)
                 .into(),
             (Some(selected_file), Some(_)) => container(
                 iced_image(selected_file)
-                    .width(460)
-                    .height(620)
+                    .width(width)
+                    .height(height)
                     .content_fit(iced::ContentFit::Contain),
             )
-            .width(460)
-            .height(620)
+            .width(width)
+            .height(height)
             .into(),
         }
     }

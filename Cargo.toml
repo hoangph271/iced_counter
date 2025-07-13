@@ -29,4 +29,4 @@ counter = []
 
 all = ["instax_framer", "system_info", "counter"]
 
-default = ["instax_framer"]
+default = []

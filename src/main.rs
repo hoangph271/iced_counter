@@ -18,7 +18,7 @@ fn main() -> iced::Result {
         OmniApp::update,
         OmniApp::view,
     )
-    .title("iced_counter by @sneu")
+    .title("omni_app by @sneu")
     .theme(counter_themes::theme_from_state)
     .window_size(Size {
         width: 544.0,
