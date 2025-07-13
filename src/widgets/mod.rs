@@ -1,5 +1,8 @@
+pub mod counter_themes;
+
 #[cfg(feature = "counter")]
 pub mod counter;
-pub mod counter_themes;
+#[cfg(feature = "instax_framer")]
+pub mod instax_framer;
 #[cfg(feature = "system_info")]
 pub mod system_info;
