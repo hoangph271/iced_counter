@@ -22,6 +22,7 @@ pub(crate) struct Counter {
     allow_negative: bool,
     auto_increment_enabled: bool,
 }
+
 impl Counter {
     pub(crate) fn update(&mut self, counter_event: CounterMessage) -> Task<CounterMessage> {
         match counter_event {

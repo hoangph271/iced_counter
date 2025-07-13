@@ -31,8 +31,7 @@ impl InstaxFramer {
 
     pub(crate) fn view(&self) -> Element<'_, InstaxFramerMessage> {
         let width = 460;
-        // let height = 620;
-        let height = 460;
+        let height = 620;
 
         match (&self.selected_file, &self.loaded_image) {
             (None, _) => button(text("Pick an image file"))
