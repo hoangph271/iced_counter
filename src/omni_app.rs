@@ -7,13 +7,13 @@ use iced::{
 use crate::counter_themes::{self, ThemeMode, ALL_THEME_MODES};
 
 #[cfg(feature = "system_info")]
-use crate::widgets::system_info::{SystemInfo, SystemInfoMessage};
+use crate::features::system_info::{SystemInfo, SystemInfoMessage};
 
 #[cfg(feature = "counter")]
-use crate::widgets::counter::{Counter, CounterMessage};
+use crate::features::counter::{Counter, CounterMessage};
 
 #[cfg(feature = "instax_framer")]
-use crate::widgets::instax_framer::{InstaxFramer, InstaxFramerMessage};
+use crate::features::instax_framer::{InstaxFramer, InstaxFramerMessage};
 
 #[derive(Debug)]
 pub(super) struct OmniApp {
@@ -167,26 +167,3 @@ impl OmniApp {
         Task::batch(start_up_tasks)
     }
 }
-
-// ? dark_light::subscribe is removed on dark-light@2.0.0, see https://github.com/rust-dark-light/dark-light/pull/60
-// fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
-//     stream::once(dark_light::subscribe()).flat_map(|it| {
-//         if let Ok(stream) = it {
-//             stream
-//                 .map(|theme_mode| match theme_mode {
-//                     dark_light::Mode::Dark => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
-//                     }
-//                     dark_light::Mode::Light => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
-//                     }
-//                     dark_light::Mode::Default => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
-//                     }
-//                 })
-//                 .left_stream()
-//         } else {
-//             stream::once(async { CounterMessage::NoOp }).right_stream()
-//         }
-//     })
-// }

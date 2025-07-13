@@ -70,3 +70,26 @@ pub fn theme_from_state(state: &OmniApp) -> Theme {
         (_, ThemeMode::SystemDefault) => Theme::GruvboxLight,
     }
 }
+
+// ? dark_light::subscribe is removed on dark-light@2.0.0, see https://github.com/rust-dark-light/dark-light/pull/60
+// fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
+//     stream::once(dark_light::subscribe()).flat_map(|it| {
+//         if let Ok(stream) = it {
+//             stream
+//                 .map(|theme_mode| match theme_mode {
+//                     dark_light::Mode::Dark => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
+//                     }
+//                     dark_light::Mode::Light => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
+//                     }
+//                     dark_light::Mode::Default => {
+//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
+//                     }
+//                 })
+//                 .left_stream()
+//         } else {
+//             stream::once(async { CounterMessage::NoOp }).right_stream()
+//         }
+//     })
+// }

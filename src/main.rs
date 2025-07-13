@@ -1,10 +1,10 @@
 use iced::Size;
 
+mod features;
 mod omni_app;
-mod widgets;
 
+use features::*;
 use omni_app::OmniApp;
-use widgets::*;
 
 fn main() -> iced::Result {
     iced::application(
