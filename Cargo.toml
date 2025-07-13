@@ -27,7 +27,8 @@ system_info = []
 instax_framer = ["dep:rfd", "dep:native-dialog", "dep:image"]
 counter = []
 ddp = []
+omni_themes = []
 
-all = ["instax_framer", "system_info", "counter", "ddp"]
+all = ["instax_framer", "system_info", "counter", "ddp", "omni_themes"]
 
 default = []

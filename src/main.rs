@@ -3,14 +3,14 @@ use iced::Size;
 mod features;
 mod omni_app;
 
-use features::*;
+#[cfg(not(feature = "omni_themes"))]
+use iced::Theme;
 use omni_app::OmniApp;
 
 fn main() -> iced::Result {
-    iced::application(
+    let app = iced::application(
         || {
             let omni_app = OmniApp::init();
-
             let start_up_tasks = omni_app.start_up_tasks();
 
             (omni_app, start_up_tasks)
@@ -19,11 +19,17 @@ fn main() -> iced::Result {
         OmniApp::view,
     )
     .title("omni_app by @sneu")
-    .theme(counter_themes::theme_from_state)
+    .theme(|_app| {
+        #[cfg(feature = "omni_themes")]
+        return features::omni_themes::OmniThemes::theme_from_state(&_app.omni_themes);
+        #[cfg(not(feature = "omni_themes"))]
+        Theme::GruvboxLight
+    })
     .window_size(Size {
         width: 544.0,
         height: 288.0,
     })
-    .subscription(OmniApp::subscription)
-    .run()
+    .subscription(OmniApp::subscription);
+
+    app.run()
 }
