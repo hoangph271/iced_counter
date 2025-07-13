@@ -9,7 +9,7 @@ A scope creeped counter application created for learning [***iced_rs***](https:/
 ## Lessons learned
 
 These are the size in bytes of the executable when I altered the `[profile.release]` section of `Cargo.toml`,
-by enabling features, one by one from top to bottom:
+by adding optimization config, one by one from top to bottom:
 
 ```toml
 # Pop!_OS Noble Numbat 24.04 x86_64
