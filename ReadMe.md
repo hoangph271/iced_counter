@@ -1,6 +1,6 @@
 # `iced_counter`
 
-A scope creeped counter application created for learning ***Iced***...!
+A scope creeped counter application created for learning [***iced_rs***](https://github.com/iced-rs/iced)...!
 
 ## TODOs
 
