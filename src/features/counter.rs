@@ -1,7 +1,7 @@
 use iced::{
     alignment::Horizontal,
     time,
-    widget::{button, checkbox, column, container, row, text, Toggler},
+    widget::{self, button, checkbox, column, container, row, text},
     Alignment, Element, Length, Subscription, Task,
 };
 use std::time::Duration;
@@ -48,10 +48,6 @@ impl Counter {
 
     pub(crate) fn view(&self) -> Element<'_, CounterMessage> {
         column![
-            Toggler::new(self.auto_increment_enabled,)
-                .label("Auto increment".to_owned())
-                .on_toggle(CounterMessage::ToggleAutoIncrement)
-                .width(Length::Shrink),
             row![
                 button(text("-").size(25)).width(35).on_press_maybe(
                     if !self.allow_negative && self.value <= 0 {
@@ -69,6 +65,13 @@ impl Counter {
             .align_y(Alignment::Center),
             container(
                 row![
+                    column![
+                        checkbox("Allow negative", self.allow_negative)
+                            .on_toggle(CounterMessage::ToggleAllowNegative),
+                        checkbox("Auto increment", self.auto_increment_enabled)
+                            .on_toggle(CounterMessage::ToggleAutoIncrement)
+                    ],
+                    widget::Space::with_width(12),
                     button("Reset")
                         .style(button::danger)
                         .on_press_maybe(if self.value != 0 {
@@ -76,14 +79,12 @@ impl Counter {
                         } else {
                             None
                         }),
-                    checkbox("Allow negative", self.allow_negative)
-                        .on_toggle(CounterMessage::ToggleAllowNegative)
                 ]
                 .spacing(12)
                 .align_y(Alignment::Center)
             )
             .align_x(Horizontal::Center)
-            .width(Length::Fill)
+            .width(Length::Shrink)
         ]
         .align_x(Horizontal::Center)
         .into()
