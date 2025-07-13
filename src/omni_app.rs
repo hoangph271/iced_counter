@@ -108,12 +108,10 @@ impl OmniApp {
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
             #[cfg(feature = "counter")]
-            OmniAppMessage::CounterEvent(counter_event) => {
-                return self
-                    .counter
-                    .update(counter_event)
-                    .map(OmniAppMessage::CounterEvent)
-            }
+            OmniAppMessage::CounterEvent(counter_event) => self
+                .counter
+                .update(counter_event)
+                .map(OmniAppMessage::CounterEvent),
             #[cfg(feature = "omni_themes")]
             OmniAppMessage::OmniThemes(message) => self
                 .omni_themes
