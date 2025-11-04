@@ -72,7 +72,7 @@ impl Counter {
                         checkbox("Auto increment", self.auto_increment_enabled)
                             .on_toggle(CounterMessage::ToggleAutoIncrement)
                     ],
-                    widget::Space::with_width(12),
+                    widget::Space::new().width(12),
                     button("Reset")
                         .style(button::danger)
                         .on_press_maybe(if self.value != 0 {

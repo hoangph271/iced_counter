@@ -12,7 +12,7 @@ impl Ddp {
     }
 
     pub(crate) fn view(&self) -> Element<'_, DdpMessage> {
-        widget::text("DDP").into()
+        widget::text("DDP - WIP").into()
     }
 
     pub(crate) fn update(&self, _message: DdpMessage) -> Task<DdpMessage> {
