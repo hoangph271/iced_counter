@@ -1,7 +1,7 @@
 use iced::{
     alignment::{Horizontal, Vertical},
-    widget::{column, container, vertical_space},
-    Alignment, Element, Length, Subscription, Task,
+    widget::{self, column, container},
+    Alignment, Element, Length, Subscription, Task, Theme,
 };
 
 #[cfg(feature = "omni_themes")]
@@ -64,32 +64,32 @@ impl OmniApp {
 
     pub fn view(&'_ self) -> Element<'_, OmniAppMessage> {
         container(
-            column![vertical_space().height(4)]
-                .push_maybe(
+            column![widget::Space::new().height(4)]
+                .push(
                     #[cfg(feature = "omni_themes")]
                     Some(self.omni_themes.view().map(OmniAppMessage::OmniThemes)),
                     #[cfg(not(feature = "omni_themes"))]
                     None::<Element<'_, OmniAppMessage>>,
                 )
-                .push_maybe(
+                .push(
                     #[cfg(feature = "counter")]
                     Some(self.counter.view().map(OmniAppMessage::CounterEvent)),
                     #[cfg(not(feature = "counter"))]
                     None::<Element<'_, OmniAppMessage>>,
                 )
-                .push_maybe(
+                .push(
                     #[cfg(feature = "system_info")]
                     Some(self.system_info.view().map(OmniAppMessage::SystemInfo)),
                     #[cfg(not(feature = "system_info"))]
                     None::<Element<'_, OmniAppMessage>>,
                 )
-                .push_maybe(
+                .push(
                     #[cfg(feature = "instax_framer")]
                     Some(self.instax_framer.view().map(OmniAppMessage::InstaxFramer)),
                     #[cfg(not(feature = "instax_framer"))]
                     None::<Element<'_, OmniAppMessage>>,
                 )
-                .push_maybe(
+                .push(
                     #[cfg(feature = "ddp")]
                     Some(self.ddp.view().map(OmniAppMessage::Ddp)),
                     #[cfg(not(feature = "ddp"))]
@@ -153,5 +153,16 @@ impl OmniApp {
         ];
 
         Task::batch(start_up_tasks)
+    }
+
+    pub fn theme(&self) -> Theme {
+        #[cfg(feature = "omni_themes")]
+        {
+            crate::features::omni_themes::OmniThemes::theme_from_state(&self.omni_themes)
+        }
+        #[cfg(not(feature = "omni_themes"))]
+        {
+            Theme::GruvboxLight
+        }
     }
 }

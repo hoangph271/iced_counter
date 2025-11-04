@@ -3,8 +3,6 @@ use iced::Size;
 mod features;
 mod omni_app;
 
-#[cfg(not(feature = "omni_themes"))]
-use iced::Theme;
 use omni_app::OmniApp;
 
 fn main() -> iced::Result {
@@ -19,12 +17,7 @@ fn main() -> iced::Result {
         OmniApp::view,
     )
     .title("omni_app by @sneu")
-    .theme(|_app| {
-        #[cfg(feature = "omni_themes")]
-        return features::omni_themes::OmniThemes::theme_from_state(&_app.omni_themes);
-        #[cfg(not(feature = "omni_themes"))]
-        Theme::GruvboxLight
-    })
+    .theme(OmniApp::theme)
     .window_size(Size {
         width: 544.0,
         height: 288.0,
