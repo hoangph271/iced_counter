@@ -1,4 +1,4 @@
-pub use iced::system::{fetch_information, Information as SystemInfomation};
+pub use iced::system::{information as fetch_information, Information as SystemInfomation};
 use iced::{
     font::{Family, Style, Weight},
     widget::{row, text},
