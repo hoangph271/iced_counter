@@ -91,8 +91,12 @@ impl Counter {
         .into()
     }
 
-    pub(crate) fn create_auto_increment_subscription() -> Subscription<CounterMessage> {
-        time::every(Duration::from_secs(1)).map(|_| CounterMessage::AutoIncrement)
+    pub(crate) fn subscription(&self) -> Subscription<CounterMessage> {
+        if self.auto_increment_enabled {
+            time::every(Duration::from_secs(1)).map(|_| CounterMessage::AutoIncrement)
+        } else {
+            Subscription::none()
+        }
     }
 
     pub(crate) fn init() -> Counter {
