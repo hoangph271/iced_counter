@@ -67,9 +67,11 @@ impl Counter {
             container(
                 row![
                     column![
-                        checkbox("Allow negative", self.allow_negative)
+                        checkbox(self.allow_negative)
+                            .label("Allow negative")
                             .on_toggle(CounterMessage::ToggleAllowNegative),
-                        checkbox("Auto increment", self.auto_increment_enabled)
+                        checkbox(self.auto_increment_enabled)
+                            .label("Auto increment")
                             .on_toggle(CounterMessage::ToggleAutoIncrement)
                     ],
                     widget::Space::new().width(12),

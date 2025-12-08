@@ -5,16 +5,13 @@ edition = "2021"
 
 [dependencies]
 dark-light = { version = "2.0.0" }
-iced = { git = "https://github.com/iced-rs/iced.git", version = "0.14.0-dev", features = [
-    "tokio",
-    "image",
-] }
-image = { version = "0.25.6", optional = true }
-native-dialog = { version = "0.9.0", optional = true }
-nokhwa = { version = "0.10.9", features = ["input-native"] }
+iced = { version = "0.14.0", features = ["tokio", "image", "sysinfo"] }
+image = { version = "0.25.9", optional = true }
+native-dialog = { version = "0.9.4", optional = true }
+nokhwa = { version = "0.10.10", features = ["input-native"] }
 # TODO: make nokhwa optional with a feature flag
-rfd = { version = "0.15.3", optional = true }
-tokio = { version = "1.46.1", features = ["rt-multi-thread"] }
+rfd = { version = "0.16.0", optional = true }
+tokio = { version = "1.48.0", features = ["rt-multi-thread"] }
 
 [profile.release]
 strip = true
@@ -23,12 +20,10 @@ panic = "abort"
 codegen-units = 1
 
 [features]
-system_info = ["iced/sysinfo"]
+system_info = []
 instax_framer = ["dep:rfd", "dep:native-dialog", "dep:image"]
 counter = []
 ddp = []
 omni_themes = []
 
-all = ["instax_framer", "system_info", "counter", "ddp", "omni_themes"]
-
-default = []
+default = ["instax_framer", "system_info", "counter", "ddp", "omni_themes"]
