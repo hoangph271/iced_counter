@@ -135,8 +135,13 @@ impl OmniApp {
     pub fn subscription(&self) -> Subscription<OmniAppMessage> {
         Subscription::batch([
             #[cfg(feature = "counter")]
-            self.counter.subscription().map(OmniAppMessage::CounterEvent),
-            // Subscription::run(create_theme_mode_stream),
+            self.counter
+                .subscription()
+                .map(OmniAppMessage::CounterEvent),
+            #[cfg(feature = "omni_themes")]
+            self.omni_themes
+                .subscription()
+                .map(OmniAppMessage::OmniThemes),
         ])
     }
 
@@ -150,6 +155,10 @@ impl OmniApp {
             self.instax_framer
                 .start_up_tasks()
                 .map(OmniAppMessage::InstaxFramer),
+            #[cfg(feature = "omni_themes")]
+            self.omni_themes
+                .start_up_tasks()
+                .map(OmniAppMessage::OmniThemes),
         ];
 
         Task::batch(start_up_tasks)

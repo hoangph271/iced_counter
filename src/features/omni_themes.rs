@@ -1,4 +1,4 @@
-use iced::{widget, Alignment, Element, Length, Task, Theme};
+use iced::{theme, widget, Alignment, Element, Length, Subscription, Task, Theme};
 use std::fmt::Display;
 
 pub const DEFAULT: &str = "Default";
@@ -31,6 +31,7 @@ impl Display for OmniThemeMode {
 #[derive(Debug, Clone)]
 pub(crate) enum OmniThemesMessage {
     ChangeThemeMode(OmniThemeMode),
+    ChangeSystemThemeMode(theme::Mode),
     SwitchTheme(String),
     NoOp,
 }
@@ -38,7 +39,7 @@ pub(crate) enum OmniThemesMessage {
 #[derive(Debug)]
 pub(crate) struct OmniThemes {
     pub application_theme_mode: OmniThemeMode,
-    pub system_theme_mode: OmniThemeMode,
+    pub system_theme_mode: theme::Mode,
     pub theme_name: String,
 }
 
@@ -52,7 +53,11 @@ impl OmniThemes {
         } = state;
 
         let theme_mode = match theme_mode {
-            OmniThemeMode::SystemDefault => system_theme_mode,
+            OmniThemeMode::SystemDefault => match system_theme_mode {
+                theme::Mode::Light => &OmniThemeMode::Light,
+                theme::Mode::Dark => &OmniThemeMode::Dark,
+                theme::Mode::None => &OmniThemeMode::SystemDefault,
+            },
             OmniThemeMode::Dark => &OmniThemeMode::Dark,
             OmniThemeMode::Light => &OmniThemeMode::Light,
         };
@@ -71,7 +76,7 @@ impl OmniThemes {
     pub(crate) fn init() -> OmniThemes {
         Self {
             application_theme_mode: OmniThemeMode::SystemDefault,
-            system_theme_mode: get_system_theme_mode(),
+            system_theme_mode: theme::Mode::None,
             theme_name: GRUVBOX.to_owned(),
         }
     }
@@ -80,6 +85,9 @@ impl OmniThemes {
         match message {
             OmniThemesMessage::ChangeThemeMode(theme_mode) => {
                 self.application_theme_mode = theme_mode;
+            }
+            OmniThemesMessage::ChangeSystemThemeMode(theme_mode) => {
+                self.system_theme_mode = theme_mode;
             }
             OmniThemesMessage::SwitchTheme(theme_name) => self.theme_name = theme_name,
             OmniThemesMessage::NoOp => {}
@@ -109,6 +117,14 @@ impl OmniThemes {
         .align_y(Alignment::Center)
         .into()
     }
+
+    pub(crate) fn start_up_tasks(&self) -> Task<OmniThemesMessage> {
+        iced::system::theme().map(OmniThemesMessage::ChangeSystemThemeMode)
+    }
+
+    pub(crate) fn subscription(&self) -> Subscription<OmniThemesMessage> {
+        iced::system::theme_changes().map(OmniThemesMessage::ChangeSystemThemeMode)
+    }
 }
 
 pub const ALL_THEME_MODES: [OmniThemeMode; 3] = [
@@ -116,38 +132,3 @@ pub const ALL_THEME_MODES: [OmniThemeMode; 3] = [
     OmniThemeMode::Dark,
     OmniThemeMode::Light,
 ];
-
-pub fn get_system_theme_mode() -> OmniThemeMode {
-    match dark_light::detect() {
-        Ok(dark_light::Mode::Dark) => OmniThemeMode::Dark,
-        Ok(dark_light::Mode::Light) => OmniThemeMode::Light,
-        Ok(dark_light::Mode::Unspecified) => OmniThemeMode::SystemDefault,
-        Err(e) => {
-            eprintln!("{e}");
-            OmniThemeMode::SystemDefault
-        }
-    }
-}
-
-// ? dark_light::subscribe is removed on dark-light@2.0.0, see https://github.com/rust-dark-light/dark-light/pull/60
-// fn create_theme_mode_stream() -> impl Stream<Item = CounterMessage> {
-//     stream::once(dark_light::subscribe()).flat_map(|it| {
-//         if let Ok(stream) = it {
-//             stream
-//                 .map(|theme_mode| match theme_mode {
-//                     dark_light::Mode::Dark => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Dark)
-//                     }
-//                     dark_light::Mode::Light => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::Light)
-//                     }
-//                     dark_light::Mode::Default => {
-//                         CounterMessage::ChangeSystemThemeMode(ThemeMode::SystemDefault)
-//                     }
-//                 })
-//                 .left_stream()
-//         } else {
-//             stream::once(async { CounterMessage::NoOp }).right_stream()
-//         }
-//     })
-// }
