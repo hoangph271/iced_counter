@@ -22,7 +22,6 @@ codegen-units = 1
 system_info = []
 instax_framer = ["dep:rfd", "dep:native-dialog", "dep:image"]
 counter = []
-ddp = []
 omni_themes = []
 
-default = ["instax_framer", "system_info", "counter", "ddp", "omni_themes"]
+default = ["instax_framer", "system_info", "counter", "omni_themes"]

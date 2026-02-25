@@ -12,7 +12,6 @@ The app (`omni_app`) is composed of independent feature modules, all enabled by 
 | `system_info` | Displays system name, kernel, and OS version at startup |
 | `instax_framer` | Pick a JPG/PNG image file and display it in a fixed frame |
 | `omni_themes` | Theme picker — supports Default, Gruvbox, and Solarized in light/dark/system-default modes |
-| `ddp` | Work in progress |
 
 Build with a subset of features:
 

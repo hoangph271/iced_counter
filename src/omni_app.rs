@@ -15,9 +15,6 @@ use crate::features::counter::{Counter, CounterMessage};
 #[cfg(feature = "instax_framer")]
 use crate::features::instax_framer::{InstaxFramer, InstaxFramerMessage};
 
-#[cfg(feature = "ddp")]
-use crate::features::ddp::{Ddp, DdpMessage};
-
 #[derive(Debug)]
 pub(super) struct OmniApp {
     #[cfg(feature = "omni_themes")]
@@ -28,8 +25,6 @@ pub(super) struct OmniApp {
     pub system_info: SystemInfo,
     #[cfg(feature = "instax_framer")]
     pub instax_framer: InstaxFramer,
-    #[cfg(feature = "ddp")]
-    pub ddp: Ddp,
 }
 
 #[derive(Clone, Debug)]
@@ -40,8 +35,6 @@ pub enum OmniAppMessage {
     SystemInfo(SystemInfoMessage),
     #[cfg(feature = "instax_framer")]
     InstaxFramer(InstaxFramerMessage),
-    #[cfg(feature = "ddp")]
-    Ddp(DdpMessage),
     #[cfg(feature = "omni_themes")]
     OmniThemes(OmniThemesMessage),
 }
@@ -57,8 +50,6 @@ impl OmniApp {
             system_info: SystemInfo::init(),
             #[cfg(feature = "instax_framer")]
             instax_framer: InstaxFramer::init(),
-            #[cfg(feature = "ddp")]
-            ddp: Ddp::init(),
         }
     }
 
@@ -87,12 +78,6 @@ impl OmniApp {
                     #[cfg(feature = "instax_framer")]
                     Some(self.instax_framer.view().map(OmniAppMessage::InstaxFramer)),
                     #[cfg(not(feature = "instax_framer"))]
-                    None::<Element<'_, OmniAppMessage>>,
-                )
-                .push(
-                    #[cfg(feature = "ddp")]
-                    Some(self.ddp.view().map(OmniAppMessage::Ddp)),
-                    #[cfg(not(feature = "ddp"))]
                     None::<Element<'_, OmniAppMessage>>,
                 )
                 .align_x(Alignment::Center)
@@ -127,8 +112,6 @@ impl OmniApp {
                 .instax_framer
                 .update(message)
                 .map(OmniAppMessage::InstaxFramer),
-            #[cfg(feature = "ddp")]
-            OmniAppMessage::Ddp(message) => self.ddp.update(message).map(OmniAppMessage::Ddp),
         }
     }
 
