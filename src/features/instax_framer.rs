@@ -4,8 +4,7 @@ use iced::{
     Element, Task,
 };
 use image::{DynamicImage, ImageReader};
-use native_dialog::{DialogBuilder, MessageLevel};
-use rfd::FileDialog;
+use rfd::{FileDialog, MessageDialog, MessageLevel};
 use std::{borrow::Cow, path::PathBuf};
 
 #[derive(Debug, Default)]
@@ -96,9 +95,9 @@ impl InstaxFramer {
                 });
             }
             InstaxFramerMessage::ImageLoadingFailed => {
-                let _ = DialogBuilder::message()
+                let _ = MessageDialog::new()
                     .set_title("Image loading failed...!")
-                    .set_text(format!(
+                    .set_description(format!(
                         "Failed to load image at {}",
                         self.selected_file
                             .as_ref()
@@ -106,8 +105,8 @@ impl InstaxFramer {
                             .unwrap_or(Cow::Borrowed("Unknown")),
                     ))
                     .set_level(MessageLevel::Error)
-                    .alert()
                     .show();
+                self.selected_file = None;
             }
             InstaxFramerMessage::ImageLoadingFinished(dynamic_image) => {
                 self.loaded_image = Some(dynamic_image);
