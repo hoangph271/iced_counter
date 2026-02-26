@@ -137,24 +137,27 @@ impl OmniThemes {
                 .spacing(0),
             )
             .center_x(Length::Fill),
-            widget::row![
-                widget::text("Light:"),
-                widget::PickList::new(
-                    LIGHT_THEMES,
-                    Some(&self.light_theme),
-                    OmniThemesMessage::SwitchLightTheme
-                )
-                .width(Length::Shrink),
-                widget::text("Dark:"),
-                widget::PickList::new(
-                    DARK_THEMES,
-                    Some(&self.dark_theme),
-                    OmniThemesMessage::SwitchDarkTheme
-                )
-                .width(Length::Shrink),
-            ]
-            .spacing(8)
-            .align_y(Alignment::Center),
+            widget::container(
+                widget::row![
+                    widget::text("Light:"),
+                    widget::PickList::new(
+                        LIGHT_THEMES,
+                        Some(&self.light_theme),
+                        OmniThemesMessage::SwitchLightTheme
+                    )
+                    .width(Length::Shrink),
+                    widget::text("Dark:"),
+                    widget::PickList::new(
+                        DARK_THEMES,
+                        Some(&self.dark_theme),
+                        OmniThemesMessage::SwitchDarkTheme
+                    )
+                    .width(Length::Shrink),
+                ]
+                .spacing(8)
+                .align_y(Alignment::Center),
+            )
+            .center_x(Length::Fill),
         ]
         .spacing(8)
         .into()

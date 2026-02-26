@@ -1,7 +1,7 @@
 use iced::{
     alignment::Horizontal,
     time,
-    widget::{self, button, checkbox, column, container, row, text},
+    widget::{self, button, checkbox, column, container, row, space, text},
     Alignment, Element, Length, Subscription, Task,
 };
 use std::time::Duration;
@@ -48,7 +48,7 @@ impl Counter {
     }
 
     pub(crate) fn view(&self) -> Element<'_, CounterMessage> {
-        column![
+        row![
             row![
                 button(text("-").size(25)).width(35).on_press_maybe(
                     if !self.allow_negative && self.value <= 0 {
@@ -64,6 +64,7 @@ impl Counter {
             ]
             .spacing(12)
             .align_y(Alignment::Center),
+            space().width(6),
             container(
                 row![
                     column![
@@ -89,7 +90,7 @@ impl Counter {
             .align_x(Horizontal::Center)
             .width(Length::Shrink)
         ]
-        .align_x(Horizontal::Center)
+        .align_y(Alignment::Center)
         .into()
     }
 
