@@ -5,11 +5,11 @@ edition = "2021"
 
 [dependencies]
 iced = { version = "0.14.0", features = ["tokio", "image", "sysinfo"] }
-image = { version = "0.25.9", optional = true }
+image = { version = "0.25.10", optional = true }
 nokhwa = { version = "0.10.10", features = ["input-native"] }
 # TODO: make nokhwa optional with a feature flag
 rfd = { version = "0.17.2", optional = true }
-tokio = { version = "1.49.0", features = ["rt-multi-thread"] }
+tokio = { version = "1.51.1", features = ["rt-multi-thread"] }
 
 [profile.release]
 strip = true
