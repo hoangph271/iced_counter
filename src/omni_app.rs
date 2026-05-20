@@ -30,18 +30,22 @@ pub(super) struct OmniAppConfig {
 }
 
 impl PartialEq for OmniAppConfig {
+    #[allow(unused)]
     fn eq(&self, other: &Self) -> bool {
+        #[cfg(feature = "counter")]
         if self.counter != other.counter {
             return false;
         }
 
+        #[cfg(feature = "omni_themes")]
         if self.omni_themes.dark_theme != other.omni_themes.dark_theme
-            && self.omni_themes.light_theme != other.omni_themes.light_theme
-            && self.omni_themes.application_theme_mode != other.omni_themes.application_theme_mode
+            || self.omni_themes.light_theme != other.omni_themes.light_theme
+            || self.omni_themes.application_theme_mode != other.omni_themes.application_theme_mode
         {
             return false;
         }
 
+        #[cfg(feature = "instax_framer")]
         if self.instax_framer.selected_file != other.instax_framer.selected_file {
             return false;
         }
@@ -173,6 +177,7 @@ impl OmniApp {
             async move { confy::store(APP_NAME, None, app_config) },
             |result| match result {
                 Ok(()) => {
+                    // TODO: replace with proper logging once a logger is wired up
                     println!(
                         "Config saved {:?}",
                         confy::get_configuration_file_path(APP_NAME, None)
@@ -187,19 +192,33 @@ impl OmniApp {
 
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
-            OmniAppMessage::NoOp => Task::done(OmniAppMessage::NoOp),
+            OmniAppMessage::NoOp => Task::none(),
             // Config operations
-            OmniAppMessage::CloseRequested => Task::done(OmniAppMessage::SavingConfigRequested)
+            OmniAppMessage::CloseRequested => self
+                .save_config()
                 .chain(window::latest().and_then(window::close::<OmniAppMessage>)),
             OmniAppMessage::ConfigLoaded(app_config) => {
                 self.last_saved_config = Some(app_config.clone());
 
-                self.counter = app_config.counter;
-                self.omni_themes = app_config.omni_themes;
-                self.instax_framer = app_config.instax_framer;
+                #[cfg(feature = "counter")]
+                {
+                    self.counter = app_config.counter;
+                }
 
+                #[cfg(feature = "omni_themes")]
+                {
+                    self.omni_themes = app_config.omni_themes;
+                }
+
+                #[cfg(feature = "instax_framer")]
+                {
+                    self.instax_framer = app_config.instax_framer;
+                }
+
+                #[allow(unused_mut)]
                 let mut tasks: Vec<Task<OmniAppMessage>> = vec![];
 
+                #[cfg(feature = "instax_framer")]
                 if let Some(path) = self.instax_framer.selected_file.clone() {
                     tasks.push(
                         self.instax_framer
@@ -223,8 +242,8 @@ impl OmniApp {
             OmniAppMessage::SavingConfigRequested => self.save_config(),
             // Feature-specific message handlers
             #[cfg(feature = "counter")]
-            OmniAppMessage::CounterEvent(counter_event) => {
-                let save_task = if let CounterMessage::CriticalStateChanged = counter_event {
+            OmniAppMessage::CounterEvent(message) => {
+                let save_task = if let CounterMessage::CriticalStateChanged = message {
                     Task::done(OmniAppMessage::SavingConfigRequested)
                 } else {
                     Task::none()
@@ -232,7 +251,7 @@ impl OmniApp {
 
                 let task = self
                     .counter
-                    .update(counter_event)
+                    .update(message)
                     .map(OmniAppMessage::CounterEvent);
 
                 task.chain(save_task)
@@ -241,10 +260,16 @@ impl OmniApp {
             OmniAppMessage::OmniThemes(message) => {
                 let task = self
                     .omni_themes
-                    .update(message)
+                    .update(message.clone())
                     .map(OmniAppMessage::OmniThemes);
 
-                task.chain(Task::done(OmniAppMessage::SavingConfigRequested))
+                let save_task = if let OmniThemesMessage::CriticalStateChanged = message {
+                    Task::done(OmniAppMessage::SavingConfigRequested)
+                } else {
+                    Task::none()
+                };
+
+                task.chain(save_task)
             }
             #[cfg(feature = "system_info")]
             OmniAppMessage::SystemInfo(system_info) => self
@@ -291,6 +316,9 @@ impl OmniApp {
     }
 
     pub(crate) fn start_up_tasks(&mut self) -> Task<OmniAppMessage> {
+        // TODO: load_config runs concurrently with other startup tasks via Task::batch; if those
+        // tasks dispatch state mutations, they can interleave with ConfigLoaded overwriting the
+        // same fields. Consider making load_config the first sequential step if this causes issues.
         #[allow(clippy::vec_init_then_push)]
         #[allow(unused_mut)]
         let mut start_up_tasks = vec![

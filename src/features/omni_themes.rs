@@ -1,4 +1,4 @@
-use iced::{border, theme, widget, Alignment, Element, Length, Subscription, Task, Theme};
+use iced::{Alignment, Element, Length, Subscription, Task, Theme, border, theme, widget};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
@@ -14,6 +14,7 @@ pub(crate) enum OmniThemesMessage {
     ChangeSystemThemeMode(theme::Mode),
     SwitchLightTheme(SerializableTheme),
     SwitchDarkTheme(SerializableTheme),
+    CriticalStateChanged,
 }
 
 #[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
@@ -96,6 +97,8 @@ impl From<Theme> for SerializableTheme {
             Theme::Moonfly => Self::Moonfly,
             Theme::Nightfly => Self::Nightfly,
             Theme::Oxocarbon => Self::Oxocarbon,
+            // TODO: Custom themes can't round-trip through SerializableTheme; fall back to Dark
+            // until we either store the custom palette or expose iced's built-in theme list
             Theme::Custom(_) => {
                 unimplemented!("Custom themes are not supported yet")
             }
@@ -180,6 +183,13 @@ impl OmniThemes {
     }
 
     pub(crate) fn update(&mut self, message: OmniThemesMessage) -> Task<OmniThemesMessage> {
+        let is_critical_state_changed = matches!(
+            message,
+            OmniThemesMessage::ChangeSystemThemeMode(_)
+                | OmniThemesMessage::SwitchLightTheme(_)
+                | OmniThemesMessage::SwitchDarkTheme(_)
+        );
+
         match message {
             OmniThemesMessage::ChangeThemeMode(mode) => {
                 self.application_theme_mode = mode;
@@ -189,9 +199,14 @@ impl OmniThemes {
             }
             OmniThemesMessage::SwitchLightTheme(theme) => self.light_theme = theme,
             OmniThemesMessage::SwitchDarkTheme(theme) => self.dark_theme = theme,
+            OmniThemesMessage::CriticalStateChanged => {}
         };
 
-        Task::none()
+        if is_critical_state_changed {
+            Task::done(OmniThemesMessage::CriticalStateChanged)
+        } else {
+            Task::none()
+        }
     }
 
     pub(crate) fn view(&self) -> Element<'_, OmniThemesMessage> {
