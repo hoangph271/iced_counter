@@ -1,3 +1,5 @@
+#[cfg(feature = "config")]
+pub mod config;
 #[cfg(feature = "counter")]
 pub mod counter;
 #[cfg(feature = "instax_framer")]

@@ -1,13 +1,14 @@
+#[cfg(feature = "config")]
+use crate::constants::APP_NAME;
 use iced::{
     Alignment, Element, Length, Subscription, Task, Theme,
     alignment::{Horizontal, Vertical},
     widget::{self, column, container},
     window,
 };
+#[cfg(feature = "config")]
 use rfd::{MessageDialog, MessageLevel};
-use serde::{Deserialize, Serialize};
 
-use crate::constants::APP_NAME;
 #[cfg(feature = "omni_themes")]
 use crate::features::omni_themes::{OmniThemes, OmniThemesMessage};
 #[cfg(feature = "system_info")]
@@ -19,57 +20,13 @@ use crate::features::counter::{Counter, CounterMessage};
 #[cfg(feature = "instax_framer")]
 use crate::features::instax_framer::{InstaxFramer, InstaxFramerMessage};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(super) struct OmniAppConfig {
-    #[cfg(feature = "counter")]
-    counter: Counter,
-    #[cfg(feature = "omni_themes")]
-    omni_themes: OmniThemes,
-    #[cfg(feature = "instax_framer")]
-    instax_framer: InstaxFramer,
-}
-
-impl PartialEq for OmniAppConfig {
-    #[allow(unused)]
-    fn eq(&self, other: &Self) -> bool {
-        #[cfg(feature = "counter")]
-        if self.counter != other.counter {
-            return false;
-        }
-
-        #[cfg(feature = "omni_themes")]
-        if self.omni_themes.dark_theme != other.omni_themes.dark_theme
-            || self.omni_themes.light_theme != other.omni_themes.light_theme
-            || self.omni_themes.application_theme_mode != other.omni_themes.application_theme_mode
-        {
-            return false;
-        }
-
-        #[cfg(feature = "instax_framer")]
-        if self.instax_framer.selected_file != other.instax_framer.selected_file {
-            return false;
-        }
-
-        true
-    }
-}
-
-impl Default for OmniAppConfig {
-    fn default() -> Self {
-        Self {
-            #[cfg(feature = "counter")]
-            counter: Counter::init(),
-            #[cfg(feature = "omni_themes")]
-            omni_themes: OmniThemes::init(),
-            #[cfg(feature = "instax_framer")]
-            instax_framer: InstaxFramer::init(),
-        }
-    }
-}
+#[cfg(feature = "config")]
+use crate::features::config::OmniAppConfig;
 
 #[derive(Debug)]
 pub(super) struct OmniApp {
     // TODO: Maybe use a hash instead of storing the config directly
+    #[cfg(feature = "config")]
     last_saved_config: Option<OmniAppConfig>,
     #[cfg(feature = "omni_themes")]
     pub omni_themes: OmniThemes,
@@ -81,12 +38,18 @@ pub(super) struct OmniApp {
     pub instax_framer: InstaxFramer,
 }
 
+#[allow(unused)]
 #[derive(Clone, Debug)]
 pub enum OmniAppMessage {
     NoOp,
+    #[cfg(feature = "config")]
     ConfigLoaded(OmniAppConfig),
+    #[cfg(feature = "config")]
     SavingConfigRequested,
+    #[cfg(feature = "config")]
     SavingConfigFailed(String),
+    #[cfg(feature = "config")]
+    LoadingConfigFailed(String),
     CloseRequested,
     #[cfg(feature = "counter")]
     CounterEvent(CounterMessage),
@@ -96,13 +59,13 @@ pub enum OmniAppMessage {
     InstaxFramer(InstaxFramerMessage),
     #[cfg(feature = "omni_themes")]
     OmniThemes(OmniThemesMessage),
-    LoadingConfigFailed(String),
     TerminateImmediately,
 }
 
 impl OmniApp {
     pub fn init() -> Self {
         Self {
+            #[cfg(feature = "config")]
             last_saved_config: None,
             #[cfg(feature = "omni_themes")]
             omni_themes: OmniThemes::init(),
@@ -152,6 +115,7 @@ impl OmniApp {
         .into()
     }
 
+    #[cfg(feature = "config")]
     fn load_config(&mut self) -> Task<OmniAppMessage> {
         Task::perform(
             async move { confy::load(APP_NAME, None) },
@@ -162,6 +126,7 @@ impl OmniApp {
         )
     }
 
+    #[cfg(feature = "config")]
     fn save_config(&mut self) -> Task<OmniAppMessage> {
         let app_config = OmniAppConfig {
             #[cfg(feature = "counter")]
@@ -202,9 +167,19 @@ impl OmniApp {
                 window::latest().and_then(window::close::<OmniAppMessage>)
             }
             // Config operations
-            OmniAppMessage::CloseRequested => self
-                .save_config()
-                .chain(window::latest().and_then(window::close::<OmniAppMessage>)),
+            OmniAppMessage::CloseRequested => {
+                #[cfg(feature = "config")]
+                {
+                    self.save_config()
+                        .chain(window::latest().and_then(window::close::<OmniAppMessage>))
+                }
+
+                #[cfg(not(feature = "config"))]
+                {
+                    window::latest().and_then(window::close::<OmniAppMessage>)
+                }
+            }
+            #[cfg(feature = "config")]
             OmniAppMessage::ConfigLoaded(app_config) => {
                 self.last_saved_config = Some(app_config.clone());
 
@@ -237,6 +212,7 @@ impl OmniApp {
 
                 Task::batch(tasks)
             }
+            #[cfg(feature = "config")]
             OmniAppMessage::SavingConfigFailed(message) => {
                 let dialog = MessageDialog::new()
                     .set_title("Failed to save config")
@@ -247,6 +223,7 @@ impl OmniApp {
 
                 Task::done(OmniAppMessage::NoOp)
             }
+            #[cfg(feature = "config")]
             OmniAppMessage::LoadingConfigFailed(message) => {
                 let dialog = MessageDialog::new()
                     .set_title("Failed to load config")
@@ -265,6 +242,7 @@ impl OmniApp {
                     _ => unreachable!(),
                 }
             }
+            #[cfg(feature = "config")]
             OmniAppMessage::SavingConfigRequested => self.save_config(),
             // Feature-specific message handlers
             #[cfg(feature = "counter")]
@@ -358,6 +336,7 @@ impl OmniApp {
             self.omni_themes
                 .start_up_tasks()
                 .map(OmniAppMessage::OmniThemes),
+            #[cfg(feature = "config")]
             self.load_config(),
         ];
 
