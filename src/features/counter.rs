@@ -1,9 +1,10 @@
 use iced::{
+    Alignment, Element, Length, Subscription, Task,
     alignment::Horizontal,
     time,
     widget::{self, button, checkbox, column, container, row, space, text},
-    Alignment, Element, Length, Subscription, Task,
 };
+#[cfg(feature = "config")]
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -18,7 +19,8 @@ pub enum CounterMessage {
     CriticalStateChanged,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "config", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Default, PartialEq, Hash)]
 pub(crate) struct Counter {
     value: isize,
     allow_negative: bool,

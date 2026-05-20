@@ -1,7 +1,9 @@
 use iced::{Alignment, Element, Length, Subscription, Task, Theme, border, theme, widget};
+#[cfg(feature = "config")]
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "config", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Clone, Hash)]
 pub enum OmniThemeMode {
     SystemDefault,
     Dark,
@@ -17,7 +19,8 @@ pub(crate) enum OmniThemesMessage {
     CriticalStateChanged,
 }
 
-#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "config", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Debug, Clone, Hash)]
 pub enum SerializableTheme {
     Light,
     Dark,
@@ -135,10 +138,11 @@ impl From<SerializableTheme> for Theme {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "config", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone)]
 pub(crate) struct OmniThemes {
     pub application_theme_mode: OmniThemeMode,
-    #[serde(skip)]
+    #[cfg_attr(feature = "config", serde(skip))]
     system_theme_mode: theme::Mode,
     pub light_theme: SerializableTheme,
     pub dark_theme: SerializableTheme,

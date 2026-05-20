@@ -1,17 +1,19 @@
 use iced::{
+    Element, Task,
     alignment::Horizontal,
     widget::{button, container, image as iced_image, text},
-    Element, Task,
 };
 use image::{DynamicImage, ImageReader};
 use rfd::{FileDialog, MessageDialog, MessageLevel};
+#[cfg(feature = "config")]
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, path::PathBuf};
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "config", derive(Serialize, Deserialize))]
+#[derive(Debug, Clone, Default)]
 pub struct InstaxFramer {
     pub(crate) selected_file: Option<PathBuf>,
-    #[serde(skip)]
+    #[cfg_attr(feature = "config", serde(skip))]
     loaded_image: Option<DynamicImage>,
 }
 

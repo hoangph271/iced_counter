@@ -1,3 +1,5 @@
+use std::hash::{DefaultHasher, Hash, Hasher};
+
 use serde::{Deserialize, Serialize};
 
 #[cfg(feature = "counter")]
@@ -17,31 +19,6 @@ pub(crate) struct OmniAppConfig {
     pub instax_framer: InstaxFramer,
 }
 
-impl PartialEq for OmniAppConfig {
-    #[allow(unused)]
-    fn eq(&self, other: &Self) -> bool {
-        #[cfg(feature = "counter")]
-        if self.counter != other.counter {
-            return false;
-        }
-
-        #[cfg(feature = "omni_themes")]
-        if self.omni_themes.dark_theme != other.omni_themes.dark_theme
-            || self.omni_themes.light_theme != other.omni_themes.light_theme
-            || self.omni_themes.application_theme_mode != other.omni_themes.application_theme_mode
-        {
-            return false;
-        }
-
-        #[cfg(feature = "instax_framer")]
-        if self.instax_framer.selected_file != other.instax_framer.selected_file {
-            return false;
-        }
-
-        true
-    }
-}
-
 impl Default for OmniAppConfig {
     fn default() -> Self {
         Self {
@@ -52,5 +29,43 @@ impl Default for OmniAppConfig {
             #[cfg(feature = "instax_framer")]
             instax_framer: InstaxFramer::init(),
         }
+    }
+}
+
+impl Hash for OmniAppConfig {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        let OmniAppConfig {
+            #[cfg(feature = "counter")]
+            counter,
+            #[cfg(feature = "omni_themes")]
+            omni_themes,
+            #[cfg(feature = "instax_framer")]
+            instax_framer,
+        } = self;
+
+        #[cfg(feature = "counter")]
+        counter.hash(state);
+
+        #[cfg(feature = "omni_themes")]
+        {
+            omni_themes.application_theme_mode.hash(state);
+            omni_themes.light_theme.hash(state);
+            omni_themes.dark_theme.hash(state);
+        }
+
+        #[cfg(feature = "instax_framer")]
+        {
+            instax_framer.selected_file.hash(state);
+        }
+    }
+}
+
+impl OmniAppConfig {
+    pub fn get_hash(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+
+        self.hash(&mut hasher);
+
+        hasher.finish()
     }
 }
