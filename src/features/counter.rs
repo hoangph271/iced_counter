@@ -18,7 +18,7 @@ pub enum CounterMessage {
     CriticalStateChanged,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Counter {
     value: isize,
     allow_negative: bool,

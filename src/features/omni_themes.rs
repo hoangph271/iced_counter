@@ -136,7 +136,7 @@ impl From<SerializableTheme> for Theme {
 pub(crate) struct OmniThemes {
     pub application_theme_mode: OmniThemeMode,
     #[serde(skip)]
-    pub system_theme_mode: theme::Mode,
+    system_theme_mode: theme::Mode,
     pub light_theme: SerializableTheme,
     pub dark_theme: SerializableTheme,
 }

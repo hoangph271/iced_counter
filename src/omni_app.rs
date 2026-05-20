@@ -1,7 +1,8 @@
 use iced::{
+    Alignment, Element, Length, Subscription, Task, Theme,
     alignment::{Horizontal, Vertical},
     widget::{self, column, container},
-    window, Alignment, Element, Length, Subscription, Task, Theme,
+    window,
 };
 use rfd::{MessageDialog, MessageLevel};
 use serde::{Deserialize, Serialize};
@@ -28,6 +29,27 @@ pub(super) struct OmniAppConfig {
     instax_framer: InstaxFramer,
 }
 
+impl PartialEq for OmniAppConfig {
+    fn eq(&self, other: &Self) -> bool {
+        if self.counter != other.counter {
+            return false;
+        }
+
+        if self.omni_themes.dark_theme != other.omni_themes.dark_theme
+            && self.omni_themes.light_theme != other.omni_themes.light_theme
+            && self.omni_themes.application_theme_mode != other.omni_themes.application_theme_mode
+        {
+            return false;
+        }
+
+        if self.instax_framer.selected_file != other.instax_framer.selected_file {
+            return false;
+        }
+
+        true
+    }
+}
+
 impl Default for OmniAppConfig {
     fn default() -> Self {
         Self {
@@ -43,6 +65,8 @@ impl Default for OmniAppConfig {
 
 #[derive(Debug)]
 pub(super) struct OmniApp {
+    // TODO: Maybe use a hash instead of storing the config directly
+    last_saved_config: Option<OmniAppConfig>,
     #[cfg(feature = "omni_themes")]
     pub omni_themes: OmniThemes,
     #[cfg(feature = "counter")]
@@ -57,6 +81,7 @@ pub(super) struct OmniApp {
 pub enum OmniAppMessage {
     NoOp,
     ConfigLoaded(OmniAppConfig),
+    SavingConfigRequested,
     SavingConfigFailed(String),
     CloseRequested,
     #[cfg(feature = "counter")]
@@ -72,6 +97,7 @@ pub enum OmniAppMessage {
 impl OmniApp {
     pub fn init() -> Self {
         Self {
+            last_saved_config: None,
             #[cfg(feature = "omni_themes")]
             omni_themes: OmniThemes::init(),
             #[cfg(feature = "counter")]
@@ -137,6 +163,12 @@ impl OmniApp {
             instax_framer: self.instax_framer.clone(),
         };
 
+        if let Some(last_saved_config) = &self.last_saved_config
+            && last_saved_config == &app_config
+        {
+            return Task::done(OmniAppMessage::NoOp);
+        }
+
         Task::perform(
             async move { confy::store(APP_NAME, None, app_config) },
             |result| match result {
@@ -156,10 +188,12 @@ impl OmniApp {
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
             OmniAppMessage::NoOp => Task::done(OmniAppMessage::NoOp),
-            OmniAppMessage::CloseRequested => self
-                .save_config()
+            // Config operations
+            OmniAppMessage::CloseRequested => Task::done(OmniAppMessage::SavingConfigRequested)
                 .chain(window::latest().and_then(window::close::<OmniAppMessage>)),
             OmniAppMessage::ConfigLoaded(app_config) => {
+                self.last_saved_config = Some(app_config.clone());
+
                 self.counter = app_config.counter;
                 self.omni_themes = app_config.omni_themes;
                 self.instax_framer = app_config.instax_framer;
@@ -186,10 +220,12 @@ impl OmniApp {
 
                 Task::done(OmniAppMessage::NoOp)
             }
+            OmniAppMessage::SavingConfigRequested => self.save_config(),
+            // Feature-specific message handlers
             #[cfg(feature = "counter")]
             OmniAppMessage::CounterEvent(counter_event) => {
                 let save_task = if let CounterMessage::CriticalStateChanged = counter_event {
-                    self.save_config()
+                    Task::done(OmniAppMessage::SavingConfigRequested)
                 } else {
                     Task::none()
                 };
@@ -208,7 +244,7 @@ impl OmniApp {
                     .update(message)
                     .map(OmniAppMessage::OmniThemes);
 
-                task.chain(self.save_config())
+                task.chain(Task::done(OmniAppMessage::SavingConfigRequested))
             }
             #[cfg(feature = "system_info")]
             OmniAppMessage::SystemInfo(system_info) => self
@@ -225,7 +261,7 @@ impl OmniApp {
                     .map(OmniAppMessage::InstaxFramer);
 
                 let save_task = if should_save_config {
-                    self.save_config()
+                    Task::done(OmniAppMessage::SavingConfigRequested)
                 } else {
                     Task::none()
                 };
