@@ -96,6 +96,8 @@ pub enum OmniAppMessage {
     InstaxFramer(InstaxFramerMessage),
     #[cfg(feature = "omni_themes")]
     OmniThemes(OmniThemesMessage),
+    LoadingConfigFailed(String),
+    TerminateImmediately,
 }
 
 impl OmniApp {
@@ -152,8 +154,11 @@ impl OmniApp {
 
     fn load_config(&mut self) -> Task<OmniAppMessage> {
         Task::perform(
-            async move { confy::load(APP_NAME, None).unwrap_or_default() },
-            OmniAppMessage::ConfigLoaded,
+            async move { confy::load(APP_NAME, None) },
+            |result| match result {
+                Ok(config) => OmniAppMessage::ConfigLoaded(config),
+                Err(e) => OmniAppMessage::LoadingConfigFailed(e.to_string()),
+            },
         )
     }
 
@@ -193,6 +198,9 @@ impl OmniApp {
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
             OmniAppMessage::NoOp => Task::none(),
+            OmniAppMessage::TerminateImmediately => {
+                window::latest().and_then(window::close::<OmniAppMessage>)
+            }
             // Config operations
             OmniAppMessage::CloseRequested => self
                 .save_config()
@@ -238,6 +246,24 @@ impl OmniApp {
                 let _ = dialog.show();
 
                 Task::done(OmniAppMessage::NoOp)
+            }
+            OmniAppMessage::LoadingConfigFailed(message) => {
+                let dialog = MessageDialog::new()
+                    .set_title("Failed to load config")
+                    .set_description(format!(
+                        "Error: {}\nContinue with default settings?",
+                        message
+                    ))
+                    .set_level(MessageLevel::Error)
+                    .set_buttons(rfd::MessageButtons::YesNo);
+
+                match dialog.show() {
+                    rfd::MessageDialogResult::Yes => Task::done(OmniAppMessage::NoOp),
+                    rfd::MessageDialogResult::No => {
+                        Task::done(OmniAppMessage::TerminateImmediately)
+                    }
+                    _ => unreachable!(),
+                }
             }
             OmniAppMessage::SavingConfigRequested => self.save_config(),
             // Feature-specific message handlers
