@@ -1,6 +1,7 @@
-use iced::{border, theme, widget, Alignment, Element, Length, Subscription, Task, Theme};
+use iced::{Alignment, Element, Length, Subscription, Task, Theme, border, theme, widget};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 pub enum OmniThemeMode {
     SystemDefault,
     Dark,
@@ -11,75 +12,184 @@ pub enum OmniThemeMode {
 pub(crate) enum OmniThemesMessage {
     ChangeThemeMode(OmniThemeMode),
     ChangeSystemThemeMode(theme::Mode),
-    SwitchLightTheme(Theme),
-    SwitchDarkTheme(Theme),
+    SwitchLightTheme(SerializableTheme),
+    SwitchDarkTheme(SerializableTheme),
+    CriticalStateChanged,
 }
 
-#[derive(Debug)]
+#[derive(PartialEq, Debug, Clone, Serialize, Deserialize)]
+pub enum SerializableTheme {
+    Light,
+    Dark,
+    Dracula,
+    Nord,
+    SolarizedLight,
+    SolarizedDark,
+    GruvboxLight,
+    GruvboxDark,
+    CatppuccinLatte,
+    CatppuccinFrappe,
+    CatppuccinMacchiato,
+    CatppuccinMocha,
+    TokyoNight,
+    TokyoNightStorm,
+    TokyoNightLight,
+    KanagawaWave,
+    KanagawaDragon,
+    KanagawaLotus,
+    Moonfly,
+    Nightfly,
+    Oxocarbon,
+    Ferra,
+}
+
+impl std::fmt::Display for SerializableTheme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SerializableTheme::Dark => f.write_str("Dark"),
+            SerializableTheme::Light => f.write_str("Light"),
+            SerializableTheme::Dracula => f.write_str("Dracula"),
+            SerializableTheme::Nord => f.write_str("Nord"),
+            SerializableTheme::SolarizedLight => f.write_str("Solarized Light"),
+            SerializableTheme::SolarizedDark => f.write_str("Solarized Dark"),
+            SerializableTheme::GruvboxLight => f.write_str("Gruvbox Light"),
+            SerializableTheme::GruvboxDark => f.write_str("Gruvbox Dark"),
+            SerializableTheme::CatppuccinLatte => f.write_str("Catppuccin Latte"),
+            SerializableTheme::CatppuccinFrappe => f.write_str("Catppuccin Frappe"),
+            SerializableTheme::CatppuccinMacchiato => f.write_str("Catppuccin Macchiato"),
+            SerializableTheme::CatppuccinMocha => f.write_str("Catppuccin Mocha"),
+            SerializableTheme::TokyoNight => f.write_str("Tokyo Night"),
+            SerializableTheme::TokyoNightStorm => f.write_str("Tokyo Night Storm"),
+            SerializableTheme::TokyoNightLight => f.write_str("Tokyo Night Light"),
+            SerializableTheme::KanagawaWave => f.write_str("Kanagawa Wave"),
+            SerializableTheme::KanagawaDragon => f.write_str("Kanagawa Dragon"),
+            SerializableTheme::KanagawaLotus => f.write_str("Kanagawa Lotus"),
+            SerializableTheme::Moonfly => f.write_str("Moonfly"),
+            SerializableTheme::Nightfly => f.write_str("Nightfly"),
+            SerializableTheme::Oxocarbon => f.write_str("Oxocarbon"),
+            SerializableTheme::Ferra => f.write_str("Ferra"),
+        }
+    }
+}
+
+impl From<Theme> for SerializableTheme {
+    fn from(theme: Theme) -> Self {
+        match theme {
+            Theme::Light => Self::Light,
+            Theme::Dark => Self::Dark,
+            Theme::Dracula => Self::Dracula,
+            Theme::Ferra => Self::Ferra,
+            Theme::Nord => Self::Nord,
+            Theme::SolarizedLight => Self::SolarizedLight,
+            Theme::SolarizedDark => Self::SolarizedDark,
+            Theme::GruvboxLight => Self::GruvboxLight,
+            Theme::GruvboxDark => Self::GruvboxDark,
+            Theme::CatppuccinLatte => Self::CatppuccinLatte,
+            Theme::CatppuccinFrappe => Self::CatppuccinFrappe,
+            Theme::CatppuccinMacchiato => Self::CatppuccinMacchiato,
+            Theme::CatppuccinMocha => Self::CatppuccinMocha,
+            Theme::TokyoNight => Self::TokyoNight,
+            Theme::TokyoNightStorm => Self::TokyoNightStorm,
+            Theme::TokyoNightLight => Self::TokyoNightLight,
+            Theme::KanagawaWave => Self::KanagawaWave,
+            Theme::KanagawaDragon => Self::KanagawaDragon,
+            Theme::KanagawaLotus => Self::KanagawaLotus,
+            Theme::Moonfly => Self::Moonfly,
+            Theme::Nightfly => Self::Nightfly,
+            Theme::Oxocarbon => Self::Oxocarbon,
+            // TODO: Custom themes can't round-trip through SerializableTheme; fall back to Dark
+            // until we either store the custom palette or expose iced's built-in theme list
+            Theme::Custom(_) => {
+                unimplemented!("Custom themes are not supported yet")
+            }
+        }
+    }
+}
+
+impl From<SerializableTheme> for Theme {
+    fn from(theme: SerializableTheme) -> Self {
+        match theme {
+            SerializableTheme::Light => Theme::Light,
+            SerializableTheme::Dark => Theme::Dark,
+            SerializableTheme::Dracula => Theme::Dracula,
+            SerializableTheme::Nord => Theme::Nord,
+            SerializableTheme::SolarizedLight => Theme::SolarizedLight,
+            SerializableTheme::SolarizedDark => Theme::SolarizedDark,
+            SerializableTheme::GruvboxLight => Theme::GruvboxLight,
+            SerializableTheme::GruvboxDark => Theme::GruvboxDark,
+            SerializableTheme::CatppuccinLatte => Theme::CatppuccinLatte,
+            SerializableTheme::CatppuccinFrappe => Theme::CatppuccinFrappe,
+            SerializableTheme::CatppuccinMacchiato => Theme::CatppuccinMacchiato,
+            SerializableTheme::CatppuccinMocha => Theme::CatppuccinMocha,
+            SerializableTheme::TokyoNight => Theme::TokyoNight,
+            SerializableTheme::TokyoNightStorm => Theme::TokyoNightStorm,
+            SerializableTheme::TokyoNightLight => Theme::TokyoNightLight,
+            SerializableTheme::KanagawaWave => Theme::KanagawaWave,
+            SerializableTheme::KanagawaDragon => Theme::KanagawaDragon,
+            SerializableTheme::KanagawaLotus => Theme::KanagawaLotus,
+            SerializableTheme::Moonfly => Theme::Moonfly,
+            SerializableTheme::Nightfly => Theme::Nightfly,
+            SerializableTheme::Oxocarbon => Theme::Oxocarbon,
+            SerializableTheme::Ferra => Theme::Ferra,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct OmniThemes {
     pub application_theme_mode: OmniThemeMode,
-    pub system_theme_mode: theme::Mode,
-    pub light_theme: Theme,
-    pub dark_theme: Theme,
+    #[serde(skip)]
+    system_theme_mode: theme::Mode,
+    pub light_theme: SerializableTheme,
+    pub dark_theme: SerializableTheme,
 }
 
-pub static LIGHT_THEMES: &[Theme] = &[
-    Theme::Light,
-    Theme::SolarizedLight,
-    Theme::GruvboxLight,
-    Theme::CatppuccinLatte,
-    Theme::TokyoNightLight,
-    Theme::KanagawaLotus,
+pub static LIGHT_THEMES: &[SerializableTheme] = &[
+    SerializableTheme::Light,
+    SerializableTheme::SolarizedLight,
+    SerializableTheme::GruvboxLight,
+    SerializableTheme::CatppuccinLatte,
+    SerializableTheme::TokyoNightLight,
+    SerializableTheme::KanagawaLotus,
 ];
 
-pub static DARK_THEMES: &[Theme] = &[
-    Theme::Dark,
-    Theme::Dracula,
-    Theme::Nord,
-    Theme::SolarizedDark,
-    Theme::GruvboxDark,
-    Theme::CatppuccinFrappe,
-    Theme::CatppuccinMacchiato,
-    Theme::CatppuccinMocha,
-    Theme::TokyoNight,
-    Theme::TokyoNightStorm,
-    Theme::KanagawaWave,
-    Theme::KanagawaDragon,
-    Theme::Moonfly,
-    Theme::Nightfly,
-    Theme::Oxocarbon,
-    Theme::Ferra,
+pub static DARK_THEMES: &[SerializableTheme] = &[
+    SerializableTheme::Dark,
+    SerializableTheme::Dracula,
+    SerializableTheme::Nord,
+    SerializableTheme::SolarizedDark,
+    SerializableTheme::GruvboxDark,
+    SerializableTheme::CatppuccinFrappe,
+    SerializableTheme::CatppuccinMacchiato,
+    SerializableTheme::CatppuccinMocha,
+    SerializableTheme::TokyoNight,
+    SerializableTheme::TokyoNightStorm,
+    SerializableTheme::KanagawaWave,
+    SerializableTheme::KanagawaDragon,
+    SerializableTheme::Moonfly,
+    SerializableTheme::Nightfly,
+    SerializableTheme::Oxocarbon,
+    SerializableTheme::Ferra,
 ];
 
 impl OmniThemes {
-    pub fn theme_from_state(state: &Self) -> Theme {
-        let OmniThemes {
-            application_theme_mode: mode,
-            system_theme_mode,
-            light_theme,
-            dark_theme,
-        } = state;
-
-        match mode {
-            OmniThemeMode::Light => light_theme.clone(),
-            OmniThemeMode::Dark => dark_theme.clone(),
-            OmniThemeMode::SystemDefault => match system_theme_mode {
-                theme::Mode::Light => light_theme.clone(),
-                theme::Mode::Dark | theme::Mode::None => dark_theme.clone(),
-            },
-        }
-    }
-
     pub(crate) fn init() -> OmniThemes {
         Self {
             application_theme_mode: OmniThemeMode::SystemDefault,
             system_theme_mode: theme::Mode::None,
-            light_theme: Theme::GruvboxLight,
-            dark_theme: Theme::GruvboxDark,
+            light_theme: SerializableTheme::GruvboxLight,
+            dark_theme: SerializableTheme::GruvboxDark,
         }
     }
 
     pub(crate) fn update(&mut self, message: OmniThemesMessage) -> Task<OmniThemesMessage> {
+        let is_critical_state_changed = matches!(
+            message,
+            OmniThemesMessage::ChangeSystemThemeMode(_)
+                | OmniThemesMessage::SwitchLightTheme(_)
+                | OmniThemesMessage::SwitchDarkTheme(_)
+        );
+
         match message {
             OmniThemesMessage::ChangeThemeMode(mode) => {
                 self.application_theme_mode = mode;
@@ -89,9 +199,14 @@ impl OmniThemes {
             }
             OmniThemesMessage::SwitchLightTheme(theme) => self.light_theme = theme,
             OmniThemesMessage::SwitchDarkTheme(theme) => self.dark_theme = theme,
+            OmniThemesMessage::CriticalStateChanged => {}
         };
 
-        Task::none()
+        if is_critical_state_changed {
+            Task::done(OmniThemesMessage::CriticalStateChanged)
+        } else {
+            Task::none()
+        }
     }
 
     pub(crate) fn view(&self) -> Element<'_, OmniThemesMessage> {
@@ -169,5 +284,16 @@ impl OmniThemes {
 
     pub(crate) fn subscription(&self) -> Subscription<OmniThemesMessage> {
         iced::system::theme_changes().map(OmniThemesMessage::ChangeSystemThemeMode)
+    }
+
+    pub(crate) fn theme(&self) -> Theme {
+        match &self.application_theme_mode {
+            OmniThemeMode::Light => self.light_theme.clone().into(),
+            OmniThemeMode::Dark => self.dark_theme.clone().into(),
+            OmniThemeMode::SystemDefault => match self.system_theme_mode {
+                theme::Mode::Light => self.light_theme.clone().into(),
+                theme::Mode::Dark | theme::Mode::None => self.dark_theme.clone().into(),
+            },
+        }
     }
 }

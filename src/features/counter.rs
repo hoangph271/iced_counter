@@ -4,6 +4,7 @@ use iced::{
     widget::{self, button, checkbox, column, container, row, space, text},
     Alignment, Element, Length, Subscription, Task,
 };
+use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
@@ -14,9 +15,10 @@ pub enum CounterMessage {
     Decrement,
     Reset,
     ToggleAllowNegative(bool),
+    CriticalStateChanged,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub(crate) struct Counter {
     value: isize,
     allow_negative: bool,
@@ -42,9 +44,21 @@ impl Counter {
             CounterMessage::ToggleAllowNegative(allow_negative) => {
                 self.allow_negative = allow_negative
             }
+            CounterMessage::CriticalStateChanged => {}
         }
 
-        Task::none()
+        let should_save_config = matches!(
+            counter_event,
+            CounterMessage::ToggleAllowNegative(_)
+                | CounterMessage::ToggleAutoIncrement(_)
+                | CounterMessage::Reset
+        );
+
+        if should_save_config {
+            Task::done(CounterMessage::CriticalStateChanged)
+        } else {
+            Task::none()
+        }
     }
 
     pub(crate) fn view(&self) -> Element<'_, CounterMessage> {

@@ -5,11 +5,13 @@ use iced::{
 };
 use image::{DynamicImage, ImageReader};
 use rfd::{FileDialog, MessageDialog, MessageLevel};
+use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, path::PathBuf};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct InstaxFramer {
-    selected_file: Option<PathBuf>,
+    pub(crate) selected_file: Option<PathBuf>,
+    #[serde(skip)]
     loaded_image: Option<DynamicImage>,
 }
 
