@@ -40,7 +40,6 @@ pub(super) struct OmniApp {
 #[allow(unused)]
 #[derive(Clone, Debug)]
 pub enum OmniAppMessage {
-    NoOp,
     #[cfg(feature = "config")]
     ConfigLoaded(OmniAppConfig),
     #[cfg(feature = "config")]
@@ -49,6 +48,8 @@ pub enum OmniAppMessage {
     SavingConfigFailed(String),
     #[cfg(feature = "config")]
     LoadingConfigFailed(String),
+    #[cfg(feature = "config")]
+    ConfigSaved(u64),
     CloseRequested,
     #[cfg(feature = "counter")]
     CounterEvent(CounterMessage),
@@ -135,16 +136,17 @@ impl OmniApp {
             #[cfg(feature = "instax_framer")]
             instax_framer: self.instax_framer.clone(),
         };
+        let config_hash = app_config.get_hash();
 
-        if let Some(last_saved_config_hash) = &self.last_saved_config_hash
-            && last_saved_config_hash == &app_config.get_hash()
+        if let Some(last_saved_config_hash) = self.last_saved_config_hash
+            && last_saved_config_hash == config_hash
         {
-            return Task::done(OmniAppMessage::NoOp);
+            return Task::none();
         }
 
         Task::perform(
             async move { confy::store(APP_NAME, None, app_config) },
-            |result| match result {
+            move |result| match result {
                 Ok(()) => {
                     // TODO: replace with proper logging once a logger is wired up
                     println!(
@@ -152,7 +154,7 @@ impl OmniApp {
                         confy::get_configuration_file_path(APP_NAME, None)
                     );
 
-                    OmniAppMessage::NoOp
+                    OmniAppMessage::ConfigSaved(config_hash)
                 }
                 Err(e) => OmniAppMessage::SavingConfigFailed(e.to_string()),
             },
@@ -161,7 +163,6 @@ impl OmniApp {
 
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
-            OmniAppMessage::NoOp => Task::none(),
             OmniAppMessage::TerminateImmediately => {
                 window::latest().and_then(window::close::<OmniAppMessage>)
             }
@@ -212,6 +213,12 @@ impl OmniApp {
                 Task::batch(tasks)
             }
             #[cfg(feature = "config")]
+            OmniAppMessage::ConfigSaved(config_hash) => {
+                self.last_saved_config_hash = Some(config_hash);
+
+                Task::none()
+            }
+            #[cfg(feature = "config")]
             OmniAppMessage::SavingConfigFailed(message) => {
                 let dialog = MessageDialog::new()
                     .set_title("Failed to save config")
@@ -220,7 +227,7 @@ impl OmniApp {
 
                 let _ = dialog.show();
 
-                Task::done(OmniAppMessage::NoOp)
+                Task::none()
             }
             #[cfg(feature = "config")]
             OmniAppMessage::LoadingConfigFailed(message) => {
@@ -234,7 +241,7 @@ impl OmniApp {
                     .set_buttons(rfd::MessageButtons::YesNo);
 
                 match dialog.show() {
-                    rfd::MessageDialogResult::Yes => Task::done(OmniAppMessage::NoOp),
+                    rfd::MessageDialogResult::Yes => Task::none(),
                     rfd::MessageDialogResult::No => {
                         Task::done(OmniAppMessage::TerminateImmediately)
                     }
