@@ -1,8 +1,8 @@
-pub use iced::system::{information as fetch_information, Information as SystemInfomation};
+pub use iced::system::{Information as SystemInfomation, information as fetch_information};
 use iced::{
+    Element, Font, Task,
     font::{Family, Style, Weight},
     widget::{row, text},
-    Element, Font, Task,
 };
 
 #[derive(Debug)]
