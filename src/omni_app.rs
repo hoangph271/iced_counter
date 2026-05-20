@@ -1,9 +1,12 @@
 use iced::{
     alignment::{Horizontal, Vertical},
     widget::{self, column, container},
-    Alignment, Element, Length, Subscription, Task, Theme,
+    window, Alignment, Element, Length, Subscription, Task, Theme,
 };
+use rfd::{MessageDialog, MessageLevel};
+use serde::{Deserialize, Serialize};
 
+use crate::constants::APP_NAME;
 #[cfg(feature = "omni_themes")]
 use crate::features::omni_themes::{OmniThemes, OmniThemesMessage};
 #[cfg(feature = "system_info")]
@@ -14,6 +17,29 @@ use crate::features::counter::{Counter, CounterMessage};
 
 #[cfg(feature = "instax_framer")]
 use crate::features::instax_framer::{InstaxFramer, InstaxFramerMessage};
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub(super) struct OmniAppConfig {
+    #[cfg(feature = "counter")]
+    counter: Counter,
+    #[cfg(feature = "omni_themes")]
+    omni_themes: OmniThemes,
+    #[cfg(feature = "instax_framer")]
+    instax_framer: InstaxFramer,
+}
+
+impl Default for OmniAppConfig {
+    fn default() -> Self {
+        Self {
+            #[cfg(feature = "counter")]
+            counter: Counter::init(),
+            #[cfg(feature = "omni_themes")]
+            omni_themes: OmniThemes::init(),
+            #[cfg(feature = "instax_framer")]
+            instax_framer: InstaxFramer::init(),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub(super) struct OmniApp {
@@ -29,6 +55,10 @@ pub(super) struct OmniApp {
 
 #[derive(Clone, Debug)]
 pub enum OmniAppMessage {
+    NoOp,
+    ConfigLoaded(OmniAppConfig),
+    SavingConfigFailed(String),
+    CloseRequested,
     #[cfg(feature = "counter")]
     CounterEvent(CounterMessage),
     #[cfg(feature = "system_info")]
@@ -90,33 +120,129 @@ impl OmniApp {
         .into()
     }
 
+    fn load_config(&mut self) -> Task<OmniAppMessage> {
+        Task::perform(
+            async move { confy::load(APP_NAME, None).unwrap_or_default() },
+            OmniAppMessage::ConfigLoaded,
+        )
+    }
+
+    fn save_config(&mut self) -> Task<OmniAppMessage> {
+        let app_config = OmniAppConfig {
+            #[cfg(feature = "counter")]
+            counter: self.counter.clone(),
+            #[cfg(feature = "omni_themes")]
+            omni_themes: self.omni_themes.clone(),
+            #[cfg(feature = "instax_framer")]
+            instax_framer: self.instax_framer.clone(),
+        };
+
+        Task::perform(
+            async move { confy::store(APP_NAME, None, app_config) },
+            |result| match result {
+                Ok(()) => {
+                    println!(
+                        "Config saved {:?}",
+                        confy::get_configuration_file_path(APP_NAME, None)
+                    );
+
+                    OmniAppMessage::NoOp
+                }
+                Err(e) => OmniAppMessage::SavingConfigFailed(e.to_string()),
+            },
+        )
+    }
+
     pub fn update(&mut self, message: OmniAppMessage) -> Task<OmniAppMessage> {
         match message {
+            OmniAppMessage::NoOp => Task::done(OmniAppMessage::NoOp),
+            OmniAppMessage::CloseRequested => self
+                .save_config()
+                .chain(window::latest().and_then(window::close::<OmniAppMessage>)),
+            OmniAppMessage::ConfigLoaded(app_config) => {
+                self.counter = app_config.counter;
+                self.omni_themes = app_config.omni_themes;
+                self.instax_framer = app_config.instax_framer;
+
+                let mut tasks: Vec<Task<OmniAppMessage>> = vec![];
+
+                if let Some(path) = self.instax_framer.selected_file.clone() {
+                    tasks.push(
+                        self.instax_framer
+                            .update(InstaxFramerMessage::ImagePicked(path))
+                            .map(OmniAppMessage::InstaxFramer),
+                    );
+                }
+
+                Task::batch(tasks)
+            }
+            OmniAppMessage::SavingConfigFailed(message) => {
+                let dialog = MessageDialog::new()
+                    .set_title("Failed to save config")
+                    .set_description(message)
+                    .set_level(MessageLevel::Error);
+
+                let _ = dialog.show();
+
+                Task::done(OmniAppMessage::NoOp)
+            }
             #[cfg(feature = "counter")]
-            OmniAppMessage::CounterEvent(counter_event) => self
-                .counter
-                .update(counter_event)
-                .map(OmniAppMessage::CounterEvent),
+            OmniAppMessage::CounterEvent(counter_event) => {
+                let save_task = if let CounterMessage::CriticalStateChanged = counter_event {
+                    self.save_config()
+                } else {
+                    Task::none()
+                };
+
+                let task = self
+                    .counter
+                    .update(counter_event)
+                    .map(OmniAppMessage::CounterEvent);
+
+                task.chain(save_task)
+            }
             #[cfg(feature = "omni_themes")]
-            OmniAppMessage::OmniThemes(message) => self
-                .omni_themes
-                .update(message)
-                .map(OmniAppMessage::OmniThemes),
+            OmniAppMessage::OmniThemes(message) => {
+                let task = self
+                    .omni_themes
+                    .update(message)
+                    .map(OmniAppMessage::OmniThemes);
+
+                task.chain(self.save_config())
+            }
             #[cfg(feature = "system_info")]
             OmniAppMessage::SystemInfo(system_info) => self
                 .system_info
                 .update(system_info)
                 .map(OmniAppMessage::SystemInfo),
             #[cfg(feature = "instax_framer")]
-            OmniAppMessage::InstaxFramer(message) => self
-                .instax_framer
-                .update(message)
-                .map(OmniAppMessage::InstaxFramer),
+            OmniAppMessage::InstaxFramer(message) => {
+                let should_save_config = matches!(message, InstaxFramerMessage::ImagePicked(_));
+
+                let task = self
+                    .instax_framer
+                    .update(message)
+                    .map(OmniAppMessage::InstaxFramer);
+
+                let save_task = if should_save_config {
+                    self.save_config()
+                } else {
+                    Task::none()
+                };
+
+                task.chain(save_task)
+            }
         }
     }
 
     pub fn subscription(&self) -> Subscription<OmniAppMessage> {
         Subscription::batch([
+            iced::event::listen().filter_map(|event| match event {
+                iced::Event::Window(iced::window::Event::CloseRequested) => {
+                    Some(OmniAppMessage::CloseRequested)
+                }
+                _ => None,
+            }),
             #[cfg(feature = "counter")]
             self.counter
                 .subscription()
@@ -128,7 +254,7 @@ impl OmniApp {
         ])
     }
 
-    pub(crate) fn start_up_tasks(&self) -> Task<OmniAppMessage> {
+    pub(crate) fn start_up_tasks(&mut self) -> Task<OmniAppMessage> {
         #[allow(clippy::vec_init_then_push)]
         #[allow(unused_mut)]
         let mut start_up_tasks = vec![
@@ -142,6 +268,7 @@ impl OmniApp {
             self.omni_themes
                 .start_up_tasks()
                 .map(OmniAppMessage::OmniThemes),
+            self.load_config(),
         ];
 
         Task::batch(start_up_tasks)
@@ -150,7 +277,7 @@ impl OmniApp {
     pub fn theme(&self) -> Theme {
         #[cfg(feature = "omni_themes")]
         {
-            crate::features::omni_themes::OmniThemes::theme_from_state(&self.omni_themes)
+            self.omni_themes.theme()
         }
         #[cfg(not(feature = "omni_themes"))]
         {

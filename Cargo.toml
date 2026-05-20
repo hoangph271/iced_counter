@@ -4,11 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+confy = { version = "2.0.0", default-features = false, features = ["ron_conf"] }
 iced = { version = "0.14.0", features = ["tokio", "image", "sysinfo"] }
 image = { version = "0.25.10", optional = true }
 nokhwa = { version = "0.10.11", features = ["input-native"] }
 # TODO: make nokhwa optional with a feature flag
-rfd = { version = "0.17.2", optional = true }
+rfd = { version = "0.17.2" }
+serde = { version = "1.0.228", default-features = false, features = ["derive"] }
 tokio = { version = "1.52.3", features = ["rt-multi-thread"] }
 
 [profile.release]
@@ -19,7 +21,7 @@ codegen-units = 1
 
 [features]
 system_info = []
-instax_framer = ["dep:rfd", "dep:image"]
+instax_framer = ["dep:image"]
 counter = []
 omni_themes = []
 
