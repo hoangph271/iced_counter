@@ -11,7 +11,7 @@ The app (`omni_app`) is composed of independent feature modules, all enabled by 
 | `counter` | Increment/decrement counter with auto-increment (1/sec), allow-negative toggle, and reset |
 | `system_info` | Displays system name, kernel, and OS version at startup |
 | `instax_framer` | Pick a JPG/PNG image file and display it in a fixed frame |
-| `omni_themes` | Theme picker — supports Default, Gruvbox, and Solarized in light/dark/system-default modes |
+| `omni_themes` | Theme picker - supports Default, Gruvbox, and Solarized in light/dark/system-default modes |
 
 Build with a subset of features:
 
