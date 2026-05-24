@@ -1,6 +1,6 @@
 pub use iced::system::{Information as SystemInfomation, information as fetch_information};
 use iced::{
-    Element, Font, Task,
+    Alignment, Element, Font, Task,
     font::{Family, Style, Weight},
     widget::{row, text},
 };
@@ -54,6 +54,8 @@ impl SystemInfo {
                         })
                         .size(16),
                 ]
+                .wrap()
+                .align_x(Alignment::Center)
                 .into()
             })
     }

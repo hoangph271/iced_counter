@@ -1,5 +1,6 @@
 #[cfg(feature = "config")]
 use crate::constants::APP_NAME;
+#[cfg(feature = "instax_framer")]
 use iced::{
     Alignment, Element, Length, Subscription, Task, Theme,
     alignment::{Horizontal, Vertical},
